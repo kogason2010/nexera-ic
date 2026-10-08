@@ -41,7 +41,7 @@ export const CALLOUT_TEXT: Record<string, string> = {
   vials: '1.5 mL vials · 3 plates',
   needle: 'Sampling needle',
   pumpheads: 'Pump heads + check valves',
-  degasser: 'Degassing unit (position simplified)',
+  degasser: 'Valve block, filter, degasser (simplified)',
   column: 'Guard + analytical column',
   preheater: 'Eluent pre-heater',
   suppressor: 'Suppressor in its housing',

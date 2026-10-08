@@ -28,9 +28,9 @@ export const flowTubeFragment = /* glsl */ `
     float dash = 0.5 + 0.5 * sin((vUv.x * 160.0 - uTime * 6.0));
     float head = exp(-pow((vUv.x - uHead) / 0.012, 2.0));
     vec3 glass = vec3(0.55, 0.65, 0.78) * (0.15 + fres * 0.6);
-    vec3 flow = mix(uColA, uColB, vUv.x) * (0.35 + 0.35 * dash);
+    vec3 flow = mix(uColA, uColB, vUv.x) * (0.22 + 0.22 * dash);
     vec3 col = glass + flow * filled + vec3(1.0) * head * 0.6;
-    float a = 0.35 + fres * 0.4 + filled * 0.4 + head * 0.5;
+    float a = 0.18 + fres * 0.3 + filled * 0.35 + head * 0.4;
     gl_FragColor = vec4(col, clamp(a, 0.0, 1.0) * uOpacity);
   }
 `;

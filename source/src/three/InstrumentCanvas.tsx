@@ -159,6 +159,14 @@ function createMats() {
       envMapIntensity: 0.85,
     }),
     chrome: new THREE.MeshStandardMaterial({ color: '#dfe3e8', metalness: 1, roughness: 0.16, envMapIntensity: 1.2 }),
+    cadLight: new THREE.MeshStandardMaterial({ color: '#c3c8ce', roughness: 0.62, metalness: 0.12 }),
+    cadMid: new THREE.MeshStandardMaterial({ color: '#7d848c', roughness: 0.55, metalness: 0.35 }),
+    cadDark: new THREE.MeshStandardMaterial({ color: '#2b3036', roughness: 0.6, metalness: 0.2 }),
+    tubeWhite: new THREE.MeshStandardMaterial({ color: '#eef1f4', roughness: 0.45, metalness: 0 }),
+    suppBody: new THREE.MeshStandardMaterial({ color: '#4d5761', roughness: 0.5, metalness: 0.2 }),
+    brass: new THREE.MeshStandardMaterial({ color: '#b89a5e', roughness: 0.4, metalness: 0.8 }),
+    warn: new THREE.MeshStandardMaterial({ color: '#e7c24b', roughness: 0.6 }),
+    edge: new THREE.LineBasicMaterial({ color: '#07090c', transparent: true, opacity: 0.6 }),
     housingGrey: new THREE.MeshStandardMaterial({ color: '#8e959e', roughness: 0.55, metalness: 0.35 }),
     ovenGlass: new THREE.MeshPhysicalMaterial({
       color: '#b8c8d8',
@@ -323,6 +331,7 @@ function Door({
   status = false,
   led = '#39e07c',
   trim = true,
+  strip = 0,
 }: {
   w: number;
   h: number;
@@ -332,6 +341,7 @@ function Door({
   status?: boolean;
   led?: string;
   trim?: boolean;
+  strip?: number;
 }) {
   const M = mats();
   const g = useRef<THREE.Group>(null);
@@ -351,7 +361,22 @@ function Door({
     <group ref={g} position={pivot}>
       <group position={[-pivot[0], -pivot[1], th / 2]}>
         <RBox s={[w, h, th]} r={0.02} m={M.black} position={[w / 2, h / 2, 0]} />
-        {trim && <Outline w={w - 0.09} h={h - 0.09} r={0.07} position={[w / 2, h / 2, th / 2 + 0.003]} />}
+        {trim && (
+          <Outline w={w - strip - 0.09} h={h - 0.09} r={0.07} position={[strip + (w - strip) / 2, h / 2, th / 2 + 0.003]} />
+        )}
+        {/* inner gasket, seen when the door is open */}
+        <Outline w={w - 0.06} h={h - 0.06} r={0.05} position={[w / 2, h / 2, -th / 2 - 0.004]} material={M.rubber} />
+        {strip > 0 && (
+          <group>
+            <Box s={[0.004, h - 0.04, 0.004]} m={M.slot} position={[strip, h / 2, th / 2 + 0.001]} />
+            <mesh position={[strip / 2, h - 0.52, th / 2 + 0.002]} userData={{ noShadow: true }}>
+              <planeGeometry args={[0.016, 0.2]} />
+              <meshBasicMaterial color={led} toneMapped={false} />
+            </mesh>
+            <Cyl r={0.03} h={0.012} m={M.chrome} seg={32} position={[strip / 2, h - 0.1, th / 2 + 0.002]} rotation={[Math.PI / 2, 0, 0]} />
+            <Cyl r={0.022} h={0.014} m={M.black} seg={32} position={[strip / 2, h - 0.1, th / 2 + 0.004]} rotation={[Math.PI / 2, 0, 0]} />
+          </group>
+        )}
         {hinge !== 'top' ? (
           <group position={[gx, h * 0.5, th / 2]}>
             <Box s={[0.026, h * 0.3, 0.014]} m={M.slot} position={[0, 0, -0.004]} />
@@ -551,6 +576,12 @@ function Sampler({ glow, open }: { glow: THREE.MeshStandardMaterial; open: { cur
   );
 }
 
+/**
+ * IC-150 / IC-150D service bay, detailed after Shimadzu's open-door product images: control panel
+ * and suppressor housing top-left, two pump heads mid-left with a perforated panel between them,
+ * drain knob below, valve block / line filter / degasser lower-left, and the full-height column oven
+ * on the right with its own glass door. Hidden geometry is not invented; positions are indicative.
+ */
 function Internals({
   glow,
   dual = false,
@@ -559,7 +590,7 @@ function Internals({
   dual?: boolean;
 }) {
   const M = mats();
-  const [gPump, gOven, gSupp, gCell] = glow;
+  const [, gOven, , gCell] = glow;
   const helix = useMemo(() => {
     const pts: Vec3[] = [];
     for (let i = 0; i <= 48; i++) {
@@ -568,107 +599,179 @@ function Internals({
     }
     return pts;
   }, []);
+  const coil = useMemo(() => {
+    const pts: Vec3[] = [];
+    for (let i = 0; i <= 60; i++) {
+      const a = (i / 60) * Math.PI * 2 * 2.5;
+      pts.push([Math.cos(a) * 0.05, Math.sin(a) * 0.05, (i / 60) * 0.04]);
+    }
+    return pts;
+  }, []);
+  const holes = useMemo(() => {
+    const geo = new THREE.CylinderGeometry(0.008, 0.008, 0.006, 10).rotateX(Math.PI / 2);
+    const im = new THREE.InstancedMesh(geo, M.slot, 40);
+    const t = new THREE.Matrix4();
+    let i = 0;
+    for (let r = 0; r < 10; r++)
+      for (let c = 0; c < 4; c++) {
+        t.makeTranslation(-0.03 + c * 0.02 + (r % 2) * 0.01, -0.13 + r * 0.029, 0);
+        im.setMatrixAt(i++, t);
+      }
+    im.userData.noShadow = true;
+    return im;
+  }, [M.slot]);
+  useEffect(() => () => holes.geometry.dispose(), [holes]);
+
+  const Z = BZ; // bay back wall
+  const head = (x: number) => (
+    <group key={x} position={[x, 1.28, Z + 0.32]}>
+      <Cyl r={0.078} h={0.1} m={M.cadLight} seg={40} rotation={[Math.PI / 2, 0, 0]} />
+      <Cyl r={0.06} h={0.012} m={M.cadMid} seg={40} position={[0, 0, 0.056]} rotation={[Math.PI / 2, 0, 0]} />
+      {[0, 1, 2, 3].map((k) => {
+        const a = Math.PI / 4 + (k * Math.PI) / 2;
+        return <Cyl key={k} r={0.011} h={0.016} m={M.steel} seg={6} position={[Math.cos(a) * 0.058, Math.sin(a) * 0.058, 0.058]} rotation={[Math.PI / 2, 0, 0]} />;
+      })}
+      <Cyl r={0.022} h={0.03} m={M.peek} seg={6} position={[0, 0, 0.07]} rotation={[Math.PI / 2, 0, 0]} />
+      {[-1, 1].map((sy) => (
+        <group key={sy} position={[0, sy * 0.115, 0]}>
+          <Cyl r={0.022} h={0.06} m={M.steel} seg={20} />
+          <Cyl r={0.016} h={0.03} m={M.peek} seg={6} position={[0, sy * 0.045, 0]} />
+        </group>
+      ))}
+    </group>
+  );
+
   return (
     <group>
-      {/* --- tandem micro-plunger pump --- */}
-      <group position={[-0.28, 1.28, 0]}>
-        <RBox s={[0.44, 0.34, 0.28]} m={gPump} position={[0, 0, BZ + 0.15]} />
-        <Box s={[0.46, 0.36, 0.02]} m={M.brushed} position={[0, 0, BZ + 0.3]} />
-        {[-0.11, 0.11].map((px) => (
-          <group key={px} position={[px, 0, BZ + 0.36]}>
-            <Cyl r={0.062} h={0.1} m={M.peek} seg={32} rotation={[Math.PI / 2, 0, 0]} />
-            <Cyl r={0.03} h={0.03} m={M.steel} seg={6} position={[0, 0, 0.065]} rotation={[Math.PI / 2, 0, 0]} />
-            {[-1, 1].map((sy) => (
-              <group key={sy}>
-                <Cyl r={0.018} h={0.07} m={M.steel} position={[0, sy * 0.085, 0]} />
-                <Cyl r={0.014} h={0.03} m={M.peek} seg={6} position={[0, sy * 0.13, 0]} />
-              </group>
-            ))}
-          </group>
-        ))}
-        <Cyl r={0.03} h={0.04} m={M.rubber} position={[0, -0.22, BZ + 0.33]} rotation={[Math.PI / 2, 0, 0]} />
-        <Box s={[0.07, 0.07, 0.06]} m={M.steel} position={[0.2, -0.15, BZ + 0.33]} />
-      </group>
-      {/* --- on-line degasser --- */}
-      <group position={[-0.28, 0.5, 0]}>
-        <RBox s={[0.44, 0.28, 0.3]} m={M.peekDark} position={[0, 0, BZ + 0.16]} />
-        <Box s={[0.28, 0.045, 0.004]} m={M.paper} position={[0, 0.06, BZ + 0.312]} />
-        {[-0.15, -0.05, 0.05, 0.15].map((px) => (
-          <Cyl key={px} r={0.013} h={0.05} m={M.peek} seg={6} position={[px, -0.06, BZ + 0.33]} rotation={[Math.PI / 2, 0, 0]} />
-        ))}
-      </group>
-      {/* --- indicator / control panel (top left, behind the door) --- */}
-      <group position={[-0.29, 2.28, BZ + 0.035]}>
-        <Box s={[0.5, 0.15, 0.02]} m={M.strip} />
-        {[-0.07, 0.05, 0.17].map((x) => (
-          <mesh key={x} position={[x, 0, 0.012]} userData={{ noShadow: true }}>
-            <ringGeometry args={[0.024, 0.03, 28]} />
-            <meshBasicMaterial color="#8a939e" toneMapped={false} />
-          </mesh>
-        ))}
-        {[-0.2, -0.15].map((x, i) => (
-          <mesh key={x} position={[x, 0.02, 0.012]} userData={{ noShadow: true }}>
+      {/* --- indicator / control panel: CONNECT · STATUS LEDs, POWER, PURGE A, PURGE B, USB --- */}
+      <group position={[-0.29, 2.29, Z + 0.035]}>
+        <Box s={[0.56, 0.15, 0.02]} m={M.strip} />
+        {[-0.24, -0.205].map((x, i) => (
+          <mesh key={x} position={[x, 0.025, 0.012]} userData={{ noShadow: true }}>
             <circleGeometry args={[0.009, 16]} />
             <meshBasicMaterial color={i === 0 ? '#5aa9ff' : '#39e07c'} toneMapped={false} />
           </mesh>
         ))}
+        {[-0.11, 0.02, 0.15].map((x) => (
+          <mesh key={x} position={[x, 0, 0.012]} userData={{ noShadow: true }}>
+            <ringGeometry args={[0.028, 0.034, 32]} />
+            <meshBasicMaterial color="#9aa3ad" toneMapped={false} />
+          </mesh>
+        ))}
+        <Box s={[0.03, 0.012, 0.004]} m={M.cadMid} position={[0.24, 0.03, 0.012]} />
       </group>
-      {/* --- suppressor housing with the electrodialytic suppressor inside --- */}
-      <group position={[-0.29, 1.98, 0]}>
-        <Box s={[0.46, 0.3, 0.02]} m={M.housingGrey} position={[0, 0, BZ + 0.03]} />
-        <Box s={[0.46, 0.02, 0.28]} m={M.housingGrey} position={[0, 0.15, BZ + 0.16]} />
-        <Box s={[0.46, 0.02, 0.28]} m={M.housingGrey} position={[0, -0.15, BZ + 0.16]} />
-        <RBox s={[0.24, 0.13, 0.12]} m={gSupp} position={[-0.04, 0, BZ + 0.12]} />
-        <Box s={[0.242, 0.022, 0.122]} m={dual ? M.cation : M.anion} position={[-0.04, 0.04, BZ + 0.12]} />
+
+      {/* --- suppressor housing: light-grey box with a clear front lid --- */}
+      <group position={[-0.29, 1.97, 0]}>
+        <Box s={[0.5, 0.3, 0.02]} m={M.cadLight} position={[0, 0, Z + 0.03]} />
+        <Box s={[0.5, 0.02, 0.3]} m={M.cadLight} position={[0, 0.15, Z + 0.17]} />
+        <Box s={[0.5, 0.02, 0.3]} m={M.cadLight} position={[0, -0.15, Z + 0.17]} />
         {[-1, 1].map((sx) => (
-          <Cyl key={sx} r={0.018} h={0.05} m={M.peek} seg={8} position={[-0.04 + sx * 0.145, 0, BZ + 0.12]} rotation={[0, 0, Math.PI / 2]} />
+          <Box key={sx} s={[0.02, 0.3, 0.3]} m={M.cadLight} position={[sx * 0.24, 0, Z + 0.17]} />
         ))}
-        <mesh material={M.ptfe} position={[0.16, 0, BZ + 0.12]}>
-          <torusGeometry args={[0.05, 0.006, 6, 28]} />
+        <mesh material={M.ovenGlass} position={[0, 0, Z + 0.325]} renderOrder={6} userData={{ noShadow: true }}>
+          <boxGeometry args={[0.48, 0.28, 0.006]} />
         </mesh>
+        <RBox s={[0.24, 0.13, 0.12]} m={M.suppBody} position={[-0.05, 0, Z + 0.14]} />
+        <Box s={[0.242, 0.02, 0.122]} m={dual ? M.cation : M.anion} position={[-0.05, 0.045, Z + 0.14]} />
+        <Box s={[0.12, 0.03, 0.004]} m={M.paper} position={[-0.05, -0.02, Z + 0.202]} />
+        {[-1, 1].map((sx) => (
+          <Cyl key={sx} r={0.018} h={0.05} m={M.peek} seg={6} position={[-0.05 + sx * 0.145, 0, Z + 0.14]} rotation={[0, 0, Math.PI / 2]} />
+        ))}
+        <group position={[0.16, 0, Z + 0.12]}>
+          <Tube pts={coil} r={0.0055} m={M.tubeWhite} />
+        </group>
       </group>
-      <Tube
-        pts={[
-          [-0.13, 1.98, BZ + 0.08],
-          [-0.06, 1.95, BZ + 0.1],
-          [-0.03, 1.8, BZ + 0.06],
-          [-0.03, 1.55, BZ + 0.04],
-        ]}
-        r={0.008}
-        m={M.cable}
-      />
-      {/* --- column oven --- */}
-      <group position={[0.28, 0, 0]}>
-        {/* full-height compartment on the right, with its own glass door */}
-        <Box s={[0.5, 2.08, 0.02]} m={M.brushed} position={[0, 1.27, BZ + 0.02]} />
-        {[-0.25, 0.25].map((sx) => (
-          <Box key={sx} s={[0.02, 2.08, 0.5]} m={M.brushed} position={[sx, 1.27, BZ + 0.26]} />
+
+      {/* --- pump: two heads with check valves, perforated panel between, drain knob below --- */}
+      <Box s={[0.56, 0.42, 0.03]} m={M.cadMid} position={[-0.29, 1.28, Z + 0.26]} />
+      {head(-0.45)}
+      {head(-0.13)}
+      <group position={[-0.29, 1.28, Z + 0.28]}>
+        <Box s={[0.12, 0.32, 0.01]} m={M.cadLight} />
+        <primitive object={holes} position={[0, 0, 0.006]} />
+      </group>
+      <Cyl r={0.05} h={0.04} m={M.rubber} seg={32} position={[-0.29, 1.0, Z + 0.3]} rotation={[Math.PI / 2, 0, 0]} />
+      <Cyl r={0.018} h={0.03} m={M.cadMid} seg={20} position={[-0.29, 1.0, Z + 0.33]} rotation={[Math.PI / 2, 0, 0]} />
+      <RBox s={[0.07, 0.07, 0.06]} m={M.cadLight} position={[-0.13, 1.0, Z + 0.3]} />
+
+      {/* --- lower flow hardware: valve block with two knobs, line filter, degasser behind --- */}
+      <RBox s={[0.5, 0.18, 0.2]} m={M.cadDark} position={[-0.29, 0.36, Z + 0.12]} />
+      <Box s={[0.18, 0.03, 0.004]} m={M.paper} position={[-0.2, 0.4, Z + 0.222]} />
+      <group position={[-0.44, 0.66, Z + 0.3]}>
+        <RBox s={[0.12, 0.24, 0.08]} m={M.peek} />
+        {[0.05, -0.05].map((y) => (
+          <Cyl key={y} r={0.022} h={0.05} m={M.rubber} seg={20} position={[0, y, 0.06]} rotation={[Math.PI / 2, 0, 0]} />
         ))}
-        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 2.31, BZ + 0.26]} />
-        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 0.23, BZ + 0.26]} />
-        <mesh material={M.ovenGlass} position={[0, 1.27, BZ + 0.515]} renderOrder={6} userData={{ noShadow: true }}>
-          <boxGeometry args={[0.48, 2.06, 0.006]} />
+        {[-1, 1].map((sy) => (
+          <Cyl key={sy} r={0.014} h={0.04} m={M.steel} seg={6} position={[0, sy * 0.14, 0]} />
+        ))}
+      </group>
+      <group position={[-0.17, 0.6, Z + 0.3]}>
+        <Cyl r={0.06} h={0.05} m={M.steel} seg={32} rotation={[Math.PI / 2, 0, 0]} />
+        <Cyl r={0.045} h={0.02} m={M.brass} seg={32} position={[0, 0, 0.034]} rotation={[Math.PI / 2, 0, 0]} />
+        {[-1, 1].map((sx) => (
+          <Cyl key={sx} r={0.013} h={0.05} m={M.peek} seg={6} position={[sx * 0.08, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
+        ))}
+      </group>
+
+      {/* --- white PEEK tubing runs between the parts --- */}
+      <Tube pts={[[-0.45, 1.41, Z + 0.32], [-0.5, 1.5, Z + 0.34], [-0.56, 1.42, Z + 0.36], [-0.56, 0.9, Z + 0.36], [-0.48, 0.8, Z + 0.32], [-0.44, 0.8, Z + 0.3]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.13, 1.41, Z + 0.32], [-0.1, 1.55, Z + 0.34], [-0.03, 1.62, Z + 0.36], [0.02, 1.72, Z + 0.36], [0.08, 1.74, Z + 0.3]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.45, 1.15, Z + 0.32], [-0.38, 1.08, Z + 0.36], [-0.25, 0.86, Z + 0.36], [-0.25, 0.68, Z + 0.34], [-0.25, 0.6, Z + 0.3]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.13, 1.15, Z + 0.32], [-0.08, 1.05, Z + 0.35], [-0.08, 0.7, Z + 0.35], [-0.09, 0.6, Z + 0.3]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.44, 0.52, Z + 0.3], [-0.44, 0.47, Z + 0.3], [-0.36, 0.44, Z + 0.25], [-0.26, 0.44, Z + 0.24]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.53, 1.97, Z + 0.14], [-0.57, 1.9, Z + 0.2], [-0.57, 1.62, Z + 0.3], [-0.52, 1.52, Z + 0.34]]} r={0.0055} m={M.tubeWhite} />
+      <Tube pts={[[-0.13, 1.97, Z + 0.14], [-0.03, 1.92, Z + 0.2], [0.0, 1.6, Z + 0.3], [0.0, 0.5, Z + 0.32], [0.06, 0.44, Z + 0.3]]} r={0.0055} m={M.tubeWhite} />
+
+      {/* --- column oven: full-height compartment, framed glass door, clamps and warning labels --- */}
+      <group position={[0.28, 0, 0]}>
+        <Box s={[0.5, 2.08, 0.02]} m={M.cadMid} position={[0, 1.27, Z + 0.02]} />
+        {[-0.25, 0.25].map((sx) => (
+          <Box key={sx} s={[0.02, 2.08, 0.5]} m={M.cadMid} position={[sx, 1.27, Z + 0.26]} />
+        ))}
+        <Box s={[0.5, 0.02, 0.5]} m={M.cadMid} position={[0, 2.31, Z + 0.26]} />
+        <Box s={[0.5, 0.02, 0.5]} m={M.cadMid} position={[0, 0.23, Z + 0.26]} />
+        {/* glass door in a dark frame, hinged on the right */}
+        <mesh material={M.ovenGlass} position={[0, 1.27, Z + 0.515]} renderOrder={6} userData={{ noShadow: true }}>
+          <boxGeometry args={[0.44, 2.0, 0.006]} />
         </mesh>
-        <mesh material={M.steel} position={[0.1, 2.12, BZ + 0.035]}>
+        {[-0.235, 0.235].map((x) => (
+          <Box key={x} s={[0.03, 2.08, 0.02]} m={M.cadDark} position={[x, 1.27, Z + 0.515]} />
+        ))}
+        {[0.24, 2.3].map((y) => (
+          <Box key={y} s={[0.5, 0.03, 0.02]} m={M.cadDark} position={[0, y, Z + 0.515]} />
+        ))}
+        {[0.6, 1.95].map((y) => (
+          <Box key={y} s={[0.03, 0.08, 0.04]} m={M.cadMid} position={[0.255, y, Z + 0.5]} />
+        ))}
+        {/* fan, column holders */}
+        <mesh material={M.steel} position={[0.1, 2.12, Z + 0.035]}>
           <torusGeometry args={[0.07, 0.008, 8, 40]} />
         </mesh>
-        <Cyl r={0.03} h={0.01} m={M.slot} position={[0.1, 2.12, BZ + 0.035]} rotation={[Math.PI / 2, 0, 0]} />
-        {/* guard + analytical column */}
-        <Cyl r={0.026} h={0.18} m={M.peekDark} position={[-0.1, 1.73, BZ + 0.2]} />
-        <Cyl r={0.036} h={1.0} m={gOven} seg={32} position={[-0.1, 1.08, BZ + 0.2]} />
-        <Cyl r={0.0365} h={0.26} m={M.paper} seg={32} open position={[-0.1, 1.2, BZ + 0.2]} />
-        {[1.6, 0.56, 1.83, 1.63].map((y, i) => (
-          <Cyl key={i} r={i < 2 ? 0.046 : 0.034} h={0.05} m={M.steel} seg={6} position={[-0.1, y, BZ + 0.2]} />
+        <Cyl r={0.03} h={0.01} m={M.slot} position={[0.1, 2.12, Z + 0.035]} rotation={[Math.PI / 2, 0, 0]} />
+        {[-0.15, -0.1, -0.05].map((x) => (
+          <RBox key={x} s={[0.035, 0.06, 0.05]} m={M.cadLight} position={[x, 2.2, Z + 0.06]} />
         ))}
         {[1.4, 0.76].map((y) => (
-          <Box key={y} s={[0.06, 0.03, 0.14]} m={M.steel} position={[-0.1, y, BZ + 0.1]} />
+          <group key={y}>
+            <Box s={[0.08, 0.035, 0.16]} m={M.cadLight} position={[-0.1, y, Z + 0.11]} />
+            <Box s={[0.04, 0.04, 0.003]} m={M.warn} position={[0.08, y + 0.04, Z + 0.032]} />
+          </group>
+        ))}
+        {/* guard + analytical column */}
+        <Cyl r={0.026} h={0.18} m={M.peekDark} position={[-0.1, 1.73, Z + 0.2]} />
+        <Cyl r={0.036} h={1.0} m={gOven} seg={32} position={[-0.1, 1.08, Z + 0.2]} />
+        <Cyl r={0.0365} h={0.26} m={M.paper} seg={32} open position={[-0.1, 1.2, Z + 0.2]} />
+        {[1.6, 0.56, 1.83, 1.63].map((y, i) => (
+          <Cyl key={i} r={i < 2 ? 0.046 : 0.034} h={0.05} m={M.steel} seg={6} position={[-0.1, y, Z + 0.2]} />
         ))}
         {/* eluent pre-heater coil */}
-        <group position={[0.12, 1.62, BZ + 0.24]}>
+        <group position={[0.12, 1.62, Z + 0.24]}>
           <Tube pts={helix} r={0.006} m={M.steel} />
         </group>
         {/* conductivity cell, inside the oven */}
-        <group position={[0.12, 0.44, BZ + 0.2]}>
+        <group position={[0.12, 0.44, Z + 0.2]}>
           <RBox s={[0.14, 0.12, 0.12]} m={gCell} />
           <Cyl r={0.02} h={0.08} m={M.cable} position={[0.1, 0, 0]} rotation={[0, 0, Math.PI / 2]} />
           {[-0.035, 0.035].map((px) => (
@@ -796,7 +899,7 @@ function routedCurve(pts: THREE.Vector3[]) {
   return curve;
 }
 function routed(pts: THREE.Vector3[]) {
-  return new THREE.TubeGeometry(routedCurve(pts) as unknown as THREE.Curve<THREE.Vector3>, 1400, 0.009, 8, false);
+  return new THREE.TubeGeometry(routedCurve(pts) as unknown as THREE.Curve<THREE.Vector3>, 1400, 0.0065, 8, false);
 }
 
 function Stack() {
@@ -948,13 +1051,32 @@ function Stack() {
 
   const root = useRef<THREE.Group>(null);
   useEffect(() => {
+    const M = mats();
+    const skip = new Set<THREE.Material>([M.black, M.strip, M.silver, M.chrome, M.body, M.door, M.slot, M.interior]);
+    const added: THREE.LineSegments[] = [];
+    const meshes: THREE.Mesh[] = [];
     root.current?.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
-      const no = mesh.userData.noShadow || (mesh.material as THREE.Material)?.transparent;
+      const mat = mesh.material as THREE.Material;
+      const no = mesh.userData.noShadow || mat?.transparent;
       mesh.castShadow = !no;
       mesh.receiveShadow = !mesh.userData.noShadow;
+      meshes.push(mesh);
     });
+    // engineering-render look: crisp feature edges on the internal parts (not on tubes, glass or panels)
+    for (const mesh of meshes) {
+      const mat = mesh.material as THREE.Material;
+      if (mesh.userData.noShadow || mat.transparent || skip.has(mat)) continue;
+      if ((mesh as unknown as THREE.InstancedMesh).isInstancedMesh) continue;
+      if (mesh.geometry.type === 'TubeGeometry' || mesh.geometry.type === 'TorusGeometry') continue;
+      const lines = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 40), M.edge);
+      lines.userData.noShadow = true;
+      lines.raycast = () => {};
+      mesh.add(lines);
+      added.push(lines);
+    }
+    return () => added.forEach((l) => l.geometry.dispose());
   }, []);
 
   useEffect(
@@ -977,7 +1099,8 @@ function Stack() {
     const k = 1 - Math.exp(-dt * 4);
     // no glowing highlights: doors open to reveal the step, and on-screen callouts name the parts
     doorAS.current = a === 0 ? 1 : 0;
-    doorIC.current = a >= 1 && a <= 5 ? 1 : 0;
+    // in the dual view the IC-150 door stops at 90° so it doesn't swing across the IC-150D
+    doorIC.current = a >= 1 && a <= 4 ? 1 : a === 5 ? Math.PI / 2 / 1.95 : 0;
     doorD.current = a === 5 ? 1 : 0;
     dual.current += ((a >= 5 ? 1 : 0) - dual.current) * k;
     if (dGroup.current) {
@@ -1008,17 +1131,15 @@ function Stack() {
         <group position={[X_IC, 0, 0]}>
           <Shell h={H_IC} />
           <Internals glow={[glows.pump, glows.oven, glows.supp, glows.cell]} />
-          <FrontStrip h={H_IC} />
-          <group position={[-W / 2 + 0.012 + 0.206, 0.08, ZF + 0.004]}>
-            <Door w={W - 0.024 - 0.206} h={H_IC - 0.14} open={doorIC} label="IC-150" hinge="right" />
+          <group position={[-W / 2 + 0.012, 0.08, ZF + 0.004]}>
+            <Door w={W - 0.024} h={H_IC - 0.14} open={doorIC} label="IC-150" hinge="right" strip={0.2} />
           </group>
         </group>
         <group ref={dGroup} position={[X_D + 3.2, 0, 0]} visible={false}>
           <Shell h={H_IC} />
           <Internals dual glow={[glows.dPump, glows.dOven, glows.dSupp, glows.dCell]} />
-          <FrontStrip h={H_IC} />
-          <group position={[-W / 2 + 0.012 + 0.206, 0.08, ZF + 0.004]}>
-            <Door w={W - 0.024 - 0.206} h={H_IC - 0.14} open={doorD} label="IC-150D" hinge="right" />
+          <group position={[-W / 2 + 0.012, 0.08, ZF + 0.004]}>
+            <Door w={W - 0.024} h={H_IC - 0.14} open={doorD} label="IC-150D" hinge="right" strip={0.2} />
           </group>
           <mesh geometry={tubeD} material={tubeMatD} renderOrder={7} userData={{ noShadow: true }} />
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -FEET + 0.002, 0]} userData={{ noShadow: true }}>
@@ -1041,7 +1162,7 @@ function FocusLight() {
     if (a >= 0 && a <= 5) target.set(FOCUS[a][0] + 0.3, FOCUS[a][1] + 0.4, ZF + 0.9);
     else target.set(0, 1.6, ZF + 2.5);
     light.current?.position.lerp(target, 0.06);
-    if (light.current) light.current.intensity += ((a >= 0 && a <= 5 ? 2.2 : 0) - light.current.intensity) * 0.15;
+    if (light.current) light.current.intensity += ((a >= 0 && a <= 5 ? 1.1 : 0) - light.current.intensity) * 0.15;
   });
   return <pointLight ref={light} intensity={0} distance={4} decay={2} color="#e6efff" position={[0, 1.2, 2.5]} />;
 }
@@ -1072,7 +1193,7 @@ function Callouts() {
       const y = (-v.y * 0.5 + 0.5) * size.height;
       const ok = v.z < 1 && x > 20 && x < size.width - 60 && y > 30 && y < size.height - 20;
       el.style.opacity = ok ? '1' : '0';
-      el.classList.toggle('is-left', hr ? x + ox > hr.width - 250 : false);
+      el.classList.toggle('is-left', c.side === 'left' || (hr ? x + ox > hr.width - 250 : false));
       el.style.transform = `translate3d(${(x + ox).toFixed(1)}px, ${(y + oy).toFixed(1)}px, 0)`;
     }
   });
@@ -1098,7 +1219,7 @@ function Rig({ reducedMotion }: { reducedMotion: boolean }) {
       tLook.set(-0.05, 1.2, 0); // closed dual system
     } else {
       const f = FOCUS[a];
-      const dist = (a === 5 ? 7.4 : a === 2 ? 5.2 : a === 0 ? 4.6 : 4.3) * (portrait ? 1.25 : 1) * wide;
+      const dist = (a === 5 ? 7.4 : a === 2 ? 5.4 : a === 0 ? 4.6 : 4.9) * (portrait ? 1.25 : 1) * wide;
       tPos.set(f[0] + 0.75, f[1] + 0.45, f[2] + dist);
       tLook.set(f[0], f[1], f[2]);
     }

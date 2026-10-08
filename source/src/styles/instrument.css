@@ -216,3 +216,9 @@
     font-size: 1.3rem;
   }
 }
+@media (max-width: 700px) {
+  /* phones: the step card names the parts; floating callouts would be clipped at the screen edge */
+  .instrument__callouts {
+    display: none;
+  }
+}
