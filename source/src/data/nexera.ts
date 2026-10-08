@@ -74,7 +74,7 @@ export const SUPPRESSION = {
   cationLifetime: '> 6,000 injections',
   anionMax: 'up to 15 mmol/L Na⁺',
   cationMax: 'up to 10 mmol/L MSA',
-  current: '180 mA constant current',
+  lifetimeConditions: '50 µL injections at 1 mL/min; 20 min (anion) and 5 min (cation) runs',
   flow: '0.8–2.0 mL/min',
   mdlSuppressed: '5 ppb',
   mdlNonSuppressed: '100 ppb',
@@ -85,7 +85,7 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
     group: 'IC-150 · Pump',
     rows: [
       ['Type', 'Tandem double plunger, micro plunger (10 µL per stroke), metal-free flow path'],
-      ['Flow rate', '0.0000–4.0000 mL/min at 35 MPa · 4.0000–5.0000 mL/min at 15 MPa'],
+      ['Flow rate', '0.0001–4.0000 mL/min at up to 35 MPa · 4.0001–5.0000 mL/min at up to 15 MPa'],
       ['Accuracy', 'Within ±2 % or ±2 µL/min, whichever is greater'],
       ['Precision', '0.06 % RSD or 0.02 min SD, whichever is greater'],
       ['Degassing', 'On-line degassing unit, standard'],
@@ -132,7 +132,7 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
   {
     group: 'Footprint',
     rows: [
-      ['IC-150 / IC-150D', 'W 26 × H 49 × D 50 cm · 31 kg'],
+      ['IC-150 / IC-150D', 'W 26 × H 49 × D 50 cm · approx. 31–35 kg (sources differ)'],
       ['SI-150', 'W 26 × H 28 × D 50 cm · 13 kg'],
     ],
   },

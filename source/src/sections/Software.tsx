@@ -171,7 +171,8 @@ export function Software() {
           <SplitText as="h2" id="sw-title" className="h-lg" text="Four apps. One clear job each." />
           <p className="lede" data-reveal>
             IC Solution is the optional, Nexera IC-dedicated layer on top of LabSolutions. It splits the work by role, so each
-            person sees only what they need.
+            person sees only what they need. As of 2026 it supports single-channel systems; dual-channel systems run under
+            LabSolutions.
           </p>
         </div>
 

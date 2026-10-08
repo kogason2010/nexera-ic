@@ -17,8 +17,8 @@ export function Specs() {
             <SplitText as="h2" id="specs-title" className="h-lg" text="The numbers, at a glance." />
           </div>
           <p className="lede" data-reveal>
-            Key figures from the Nexera IC specification sheet and customer presentation. Always confirm current
-            specifications with Shimadzu before you buy.
+            Key figures from the Nexera IC specification sheet, customer presentation and system guide. Where those sources
+            disagree, the range is shown. Always confirm current specifications with Shimadzu before you buy.
           </p>
         </div>
         <div className="specs__grid">

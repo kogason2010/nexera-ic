@@ -28,6 +28,6 @@ export const MODULES = [
   {
     id: 'dual',
     name: 'IC-150D · dual channel',
-    text: 'A second flow path beside the IC-150. One autosampler injects each vial into both, so anions and cations are measured at the same time and reported in one data file.',
+    text: 'A second flow path beside the IC-150. One autosampler injects each vial into both, so anions and cations are measured at the same time and reported in one data file under LabSolutions.',
   },
 ];

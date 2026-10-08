@@ -74,7 +74,8 @@ export function Applications() {
             <SplitText as="h2" id="apps-title" className="h-lg" text="The routine runs itself." />
             <p className="lede" data-reveal>
               From the eluent bottle to the final report, the jobs that usually need an expert’s eye are automated. Students and
-              technicians get trustworthy data on day one.
+              technicians get trustworthy data on day one. Availability depends on configuration: some functions are part of
+              the optional IC Solution software, which currently supports single-channel systems.
             </p>
             <div className="apps__meta mono" aria-hidden="true">
               <span>

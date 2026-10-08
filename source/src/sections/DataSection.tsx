@@ -78,7 +78,7 @@ export function DataSection() {
           </figure>
 
           <div className="data-result" data-reveal data-delay="0.2">
-            <p className="mono">Suppressor lifetime</p>
+            <p className="mono">Suppressor lifetime test</p>
             <p className="data-result__value display">
               <CountUp value={5000} decimals={0} />
               <span className="data-result__unit">+ injections</span>
@@ -101,7 +101,7 @@ export function DataSection() {
                 <span>{EPA_B.mdlRange}</span>
               </li>
               <li>
-                <span className="mono">Cation MDL</span>
+                <span className="mono">Cation MDL (ASTM study)</span>
                 <span>0.2–1.6 µg/L</span>
               </li>
               <li>
@@ -110,7 +110,9 @@ export function DataSection() {
               </li>
             </ol>
             <p className="data-result__note">
-              Continuing calibration checks stayed within 100 ± 10 % across ~{EPA_A.hours} hours of continuous Part A analysis.
+              Lifetime figures come from Shimadzu demonstrations ({SUPPRESSION.lifetimeConditions}). They are not a guaranteed
+              service life. MDLs are study results under the stated conditions, not routine quantitation limits. Continuing
+              calibration checks stayed within 100 ± 10 % across ~{EPA_A.hours} hours of continuous Part A analysis.
             </p>
           </div>
         </div>
