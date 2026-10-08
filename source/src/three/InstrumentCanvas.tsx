@@ -6,6 +6,7 @@ import { flowTubeFragment, flowTubeVertex } from '../shaders/flowTube';
 import { getQuality } from '../utils/quality';
 import { heroState, instrumentState } from '../utils/scrollStore';
 import { AdaptiveDpr } from './shared/AdaptiveDpr';
+import { CALLOUTS, calloutEls } from './instrumentCallouts';
 import { StudioEnvironment } from './shared/StudioEnvironment';
 
 /**
@@ -32,11 +33,13 @@ const FEET = 0.04;
 const FOCUS: [number, number, number][] = [
   [X_AS, 0.85, ZF - 0.4], // autosampler
   [X_IC - 0.28, 1.0, ZF - 0.3], // pump + degasser
-  [X_IC + 0.28, 1.1, ZF - 0.3], // oven
+  [X_IC + 0.28, 1.25, ZF - 0.3], // oven
   [X_IC - 0.28, 1.95, ZF - 0.3], // suppressor
   [X_IC + 0.36, 0.55, ZF - 0.3], // detector cell
-  [X_D, 1.2, ZF - 0.3], // dual channel
+  [(X_IC + X_D) / 2 - 0.3, 1.2, ZF - 0.3], // dual channel
 ];
+
+
 
 /* ---------------------------------------------------------------- textures */
 
@@ -140,22 +143,31 @@ function createMats() {
       envMapIntensity: 1,
     }),
     black: new THREE.MeshPhysicalMaterial({
-      color: '#0a0b0d',
-      roughness: 0.3,
-      metalness: 0.25,
-      clearcoat: 1,
-      clearcoatRoughness: 0.07,
-      envMapIntensity: 1.25,
+      color: '#0c0d10',
+      roughness: 0.5,
+      metalness: 0.2,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.35,
+      envMapIntensity: 0.85,
     }),
     silver: new THREE.MeshPhysicalMaterial({
       color: '#a9afb6',
-      roughness: 0.36,
-      metalness: 0.7,
+      roughness: 0.45,
+      metalness: 0.6,
       roughnessMap: brush,
-      clearcoat: 0.3,
-      envMapIntensity: 1.1,
+      clearcoat: 0.15,
+      envMapIntensity: 0.85,
     }),
-    chrome: new THREE.MeshStandardMaterial({ color: '#e4e8ec', metalness: 1, roughness: 0.08, envMapIntensity: 1.6 }),
+    chrome: new THREE.MeshStandardMaterial({ color: '#dfe3e8', metalness: 1, roughness: 0.16, envMapIntensity: 1.2 }),
+    housingGrey: new THREE.MeshStandardMaterial({ color: '#8e959e', roughness: 0.55, metalness: 0.35 }),
+    ovenGlass: new THREE.MeshPhysicalMaterial({
+      color: '#b8c8d8',
+      roughness: 0.1,
+      transparent: true,
+      opacity: 0.12,
+      depthWrite: false,
+      envMapIntensity: 0.9,
+    }),
     interior: new THREE.MeshStandardMaterial({ color: '#262b32', roughness: 0.75, metalness: 0.25 }),
     brushed: new THREE.MeshStandardMaterial({ color: '#8b939d', metalness: 0.85, roughness: 0.42, roughnessMap: brush }),
     steel: new THREE.MeshStandardMaterial({ color: '#c9d0d8', metalness: 1, roughness: 0.25, envMapIntensity: 1.2 }),
@@ -585,14 +597,35 @@ function Internals({
           <Cyl key={px} r={0.013} h={0.05} m={M.peek} seg={6} position={[px, -0.06, BZ + 0.33]} rotation={[Math.PI / 2, 0, 0]} />
         ))}
       </group>
-      {/* --- electrodialytic suppressor cartridge --- */}
-      <group position={[-0.28, 2.0, 0]}>
-        <Box s={[0.38, 0.3, 0.02]} m={M.brushed} position={[0, 0, BZ + 0.03]} />
-        <RBox s={[0.3, 0.2, 0.07]} m={gSupp} position={[0, 0, BZ + 0.08]} />
-        <Box s={[0.302, 0.028, 0.072]} m={dual ? M.cation : M.anion} position={[0, 0.06, BZ + 0.08]} />
-        {[-0.08, 0.08].map((px) =>
-          [-1, 1].map((sy) => <Cyl key={`${px}${sy}`} r={0.016} h={0.06} m={M.peek} seg={12} position={[px, sy * 0.13, BZ + 0.08]} />),
-        )}
+      {/* --- indicator / control panel (top left, behind the door) --- */}
+      <group position={[-0.29, 2.28, BZ + 0.035]}>
+        <Box s={[0.5, 0.15, 0.02]} m={M.strip} />
+        {[-0.07, 0.05, 0.17].map((x) => (
+          <mesh key={x} position={[x, 0, 0.012]} userData={{ noShadow: true }}>
+            <ringGeometry args={[0.024, 0.03, 28]} />
+            <meshBasicMaterial color="#8a939e" toneMapped={false} />
+          </mesh>
+        ))}
+        {[-0.2, -0.15].map((x, i) => (
+          <mesh key={x} position={[x, 0.02, 0.012]} userData={{ noShadow: true }}>
+            <circleGeometry args={[0.009, 16]} />
+            <meshBasicMaterial color={i === 0 ? '#5aa9ff' : '#39e07c'} toneMapped={false} />
+          </mesh>
+        ))}
+      </group>
+      {/* --- suppressor housing with the electrodialytic suppressor inside --- */}
+      <group position={[-0.29, 1.98, 0]}>
+        <Box s={[0.46, 0.3, 0.02]} m={M.housingGrey} position={[0, 0, BZ + 0.03]} />
+        <Box s={[0.46, 0.02, 0.28]} m={M.housingGrey} position={[0, 0.15, BZ + 0.16]} />
+        <Box s={[0.46, 0.02, 0.28]} m={M.housingGrey} position={[0, -0.15, BZ + 0.16]} />
+        <RBox s={[0.24, 0.13, 0.12]} m={gSupp} position={[-0.04, 0, BZ + 0.12]} />
+        <Box s={[0.242, 0.022, 0.122]} m={dual ? M.cation : M.anion} position={[-0.04, 0.04, BZ + 0.12]} />
+        {[-1, 1].map((sx) => (
+          <Cyl key={sx} r={0.018} h={0.05} m={M.peek} seg={8} position={[-0.04 + sx * 0.145, 0, BZ + 0.12]} rotation={[0, 0, Math.PI / 2]} />
+        ))}
+        <mesh material={M.ptfe} position={[0.16, 0, BZ + 0.12]}>
+          <torusGeometry args={[0.05, 0.006, 6, 28]} />
+        </mesh>
       </group>
       <Tube
         pts={[
@@ -606,16 +639,20 @@ function Internals({
       />
       {/* --- column oven --- */}
       <group position={[0.28, 0, 0]}>
-        <Box s={[0.5, 1.72, 0.02]} m={M.brushed} position={[0, 1.1, BZ + 0.02]} />
+        {/* full-height compartment on the right, with its own glass door */}
+        <Box s={[0.5, 2.08, 0.02]} m={M.brushed} position={[0, 1.27, BZ + 0.02]} />
         {[-0.25, 0.25].map((sx) => (
-          <Box key={sx} s={[0.02, 1.72, 0.5]} m={M.brushed} position={[sx, 1.1, BZ + 0.26]} />
+          <Box key={sx} s={[0.02, 2.08, 0.5]} m={M.brushed} position={[sx, 1.27, BZ + 0.26]} />
         ))}
-        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 1.96, BZ + 0.26]} />
-        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 0.24, BZ + 0.26]} />
-        <mesh material={M.steel} position={[0.1, 1.82, BZ + 0.035]}>
+        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 2.31, BZ + 0.26]} />
+        <Box s={[0.5, 0.02, 0.5]} m={M.brushed} position={[0, 0.23, BZ + 0.26]} />
+        <mesh material={M.ovenGlass} position={[0, 1.27, BZ + 0.515]} renderOrder={6} userData={{ noShadow: true }}>
+          <boxGeometry args={[0.48, 2.06, 0.006]} />
+        </mesh>
+        <mesh material={M.steel} position={[0.1, 2.12, BZ + 0.035]}>
           <torusGeometry args={[0.07, 0.008, 8, 40]} />
         </mesh>
-        <Cyl r={0.03} h={0.01} m={M.slot} position={[0.1, 1.82, BZ + 0.035]} rotation={[Math.PI / 2, 0, 0]} />
+        <Cyl r={0.03} h={0.01} m={M.slot} position={[0.1, 2.12, BZ + 0.035]} rotation={[Math.PI / 2, 0, 0]} />
         {/* guard + analytical column */}
         <Cyl r={0.026} h={0.18} m={M.peekDark} position={[-0.1, 1.73, BZ + 0.2]} />
         <Cyl r={0.036} h={1.0} m={gOven} seg={32} position={[-0.1, 1.08, BZ + 0.2]} />
@@ -728,7 +765,7 @@ function Floor() {
         <planeGeometry args={[12, 8]} />
         <meshStandardMaterial color="#0d1116" roughness={0.45} metalness={0.35} alphaMap={tex} transparent envMapIntensity={0.5} />
       </mesh>
-      {[X_AS, X_IC, X_D].map((x) => (
+      {[X_AS, X_IC].map((x) => (
         <mesh key={x} rotation={[-Math.PI / 2, 0, 0]} position={[x, 0.002, 0]} userData={{ noShadow: true }}>
           <planeGeometry args={[W * 1.7, D * 1.3]} />
           <meshBasicMaterial map={blob} transparent depthWrite={false} />
@@ -739,6 +776,28 @@ function Floor() {
 }
 
 /* ----------------------------------------------------------------- stack */
+
+/** Capillary routing: straight runs joined by small bends. */
+function routedCurve(pts: THREE.Vector3[]) {
+  const curve = new THREE.CurvePath<THREE.Vector3>();
+  let cur = pts[0].clone();
+  for (let i = 1; i < pts.length - 1; i++) {
+    const c = pts[i];
+    const a = c.clone().sub(pts[i - 1]);
+    const b = pts[i + 1].clone().sub(c);
+    const rr = Math.min(0.05, a.length() / 2, b.length() / 2);
+    const p1 = c.clone().sub(a.normalize().multiplyScalar(rr));
+    const p2 = c.clone().add(b.normalize().multiplyScalar(rr));
+    if (p1.distanceTo(cur) > 1e-4) curve.add(new THREE.LineCurve3(cur, p1));
+    curve.add(new THREE.QuadraticBezierCurve3(p1, c.clone(), p2));
+    cur = p2;
+  }
+  curve.add(new THREE.LineCurve3(cur, pts[pts.length - 1].clone()));
+  return curve;
+}
+function routed(pts: THREE.Vector3[]) {
+  return new THREE.TubeGeometry(routedCurve(pts) as unknown as THREE.Curve<THREE.Vector3>, 1400, 0.009, 8, false);
+}
 
 function Stack() {
   const glows = useMemo(
@@ -758,17 +817,25 @@ function Stack() {
   const doorIC = useRef(0);
   const doorAS = useRef(0);
   const doorD = useRef(0);
-  const tubeMat = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: flowTubeVertex,
-        fragmentShader: flowTubeFragment,
-        transparent: true,
-        depthWrite: false,
-        uniforms: { uTime: { value: 0 }, uHead: { value: 0 } },
-      }),
-    [],
-  );
+  const dual = useRef(0);
+  const dGroup = useRef<THREE.Group>(null);
+  const mkTube = (a: string, b: string) =>
+    new THREE.ShaderMaterial({
+      vertexShader: flowTubeVertex,
+      fragmentShader: flowTubeFragment,
+      transparent: true,
+      depthWrite: false,
+      uniforms: {
+        uTime: { value: 0 },
+        uHead: { value: 0 },
+        uColA: { value: new THREE.Color(a) },
+        uColB: { value: new THREE.Color(b) },
+        uOpacity: { value: 1 },
+      },
+    });
+  // anion channel (IC-150) and cation channel (IC-150D) get their own colours
+  const tubeMat = useMemo(() => mkTube('#63d3ff', '#7cb8ff'), []);
+  const tubeMatD = useMemo(() => mkTube('#c39bff', '#ff9cc8'), []);
   // eluent bottle → degasser → pump → autosampler valve → pre-heater → column → suppressor → cell,
   // routed like real capillary: straight runs joined by small bends
   const { tube, stops } = useMemo(() => {
@@ -812,21 +879,8 @@ function Stack() {
       [0.4, 0.62, BZ + 0.3],
       [0.4, 0.46, BZ + 0.3], // 32 cell
     ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
-    const curve = new THREE.CurvePath<THREE.Vector3>();
-    let cur = pts[0].clone();
-    for (let i = 1; i < pts.length - 1; i++) {
-      const c = pts[i];
-      const a = c.clone().sub(pts[i - 1]);
-      const b = pts[i + 1].clone().sub(c);
-      const rr = Math.min(0.05, a.length() / 2, b.length() / 2);
-      const p1 = c.clone().sub(a.normalize().multiplyScalar(rr));
-      const p2 = c.clone().add(b.normalize().multiplyScalar(rr));
-      if (p1.distanceTo(cur) > 1e-4) curve.add(new THREE.LineCurve3(cur, p1));
-      curve.add(new THREE.QuadraticBezierCurve3(p1, c.clone(), p2));
-      cur = p2;
-    }
-    curve.add(new THREE.LineCurve3(cur, pts[pts.length - 1].clone()));
-    const tube = new THREE.TubeGeometry(curve as unknown as THREE.Curve<THREE.Vector3>, 1400, 0.009, 8, false);
+    const curve = routedCurve(pts);
+    const tube = routed(pts);
     const targets = [pts[15], pts[8], pts[23], pts[28], pts[34]];
     const stops = targets.map((p) => {
       let best = 0;
@@ -841,6 +895,55 @@ function Stack() {
       return best;
     });
     return { tube, stops };
+  }, []);
+
+  // second, separate analytical path for the IC-150D (drawn in the D unit's local frame). It
+  // reaches the autosampler through the back of the stack; the SI-150's internal loop-injection
+  // routing for dual systems is not drawn, and the two paths never share a tee.
+  const tubeD = useMemo(() => {
+    const ZP = BZ + 0.43;
+    const ZQ = BZ + 0.4;
+    const ZC = BZ + 0.27;
+    const ZB = -0.95; // behind the service bays
+    const toAS = X_AS - X_D;
+    const pts = [
+      [toAS - 0.36, H_AS + 0.1, -0.05],
+      [toAS - 0.36, 2.58, -0.05],
+      [-0.32, 2.58, -0.05],
+      [-0.32, 2.3, -0.05],
+      [-0.32, 2.3, ZP],
+      [-0.52, 2.3, ZP],
+      [-0.52, 0.44, ZP],
+      [-0.39, 0.44, ZP],
+      [-0.39, 1.28, ZP],
+      [-0.39, 1.48, ZP],
+      [-0.17, 1.48, ZP],
+      [-0.17, 1.58, ZP],
+      [-0.56, 1.58, ZP],
+      [-0.56, 1.1, ZP],
+      [-0.56, 1.1, ZB],
+      [toAS + 0.3, 1.1, ZB],
+      [toAS + 0.3, 1.04, ZB],
+      [0.0, 1.04, ZB],
+      [0.0, 1.04, ZQ],
+      [0.0, 1.9, ZQ],
+      [0.4, 1.9, ZQ],
+      [0.4, 1.62, BZ + 0.24],
+      [0.18, 1.88, ZC],
+      [0.18, 0.52, ZC],
+      [0.18, 0.34, ZC],
+      [-0.06, 0.34, ZP],
+      [-0.06, 2.16, ZP],
+      [-0.2, 2.16, BZ + 0.16],
+      [-0.28, 2.0, BZ + 0.16],
+      [-0.36, 1.84, BZ + 0.16],
+      [-0.36, 1.76, ZP],
+      [0.08, 1.76, ZP],
+      [0.08, 0.62, ZP],
+      [0.4, 0.62, BZ + 0.3],
+      [0.4, 0.46, BZ + 0.3],
+    ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
+    return routed(pts);
   }, []);
 
   const root = useRef<THREE.Group>(null);
@@ -859,32 +962,35 @@ function Stack() {
       Object.values(glows).forEach((m) => m.dispose());
       tube.dispose();
       tubeMat.dispose();
+      tubeD.dispose();
+      tubeMatD.dispose();
       disposeMats();
     },
-    [glows, tube, tubeMat],
+    [glows, tube, tubeMat, tubeD, tubeMatD],
   );
 
+  const blobTex = useMemo(() => radialTexture('rgba(0,0,0,0.85)', 'rgba(0,0,0,0)'), []);
+  useEffect(() => () => blobTex.dispose(), [blobTex]);
   const head = useRef(0);
   useFrame((state, dt) => {
     const a = instrumentState.active;
     const k = 1 - Math.exp(-dt * 4);
-    const set = (m: THREE.MeshStandardMaterial, on: boolean, color: string) => {
-      m.emissiveIntensity += ((on ? 0.7 : 0) - m.emissiveIntensity) * k;
-      m.emissive.set(color);
-    };
-    set(glows.sampler, a === 0, '#3f8fd8');
-    set(glows.pump, a === 1, '#3f8fd8');
-    set(glows.oven, a === 2, '#ff8a3d');
-    set(glows.supp, a === 3, '#4cc8ff');
-    set(glows.cell, a === 4, '#6fdcff');
-    for (const m of [glows.dPump, glows.dOven, glows.dSupp, glows.dCell]) set(m, a === 5, '#b48cff');
+    // no glowing highlights: doors open to reveal the step, and on-screen callouts name the parts
     doorAS.current = a === 0 ? 1 : 0;
-    doorIC.current = (a >= 1 && a <= 4) || a === 6 ? 1 : 0;
+    doorIC.current = a >= 1 && a <= 5 ? 1 : 0;
     doorD.current = a === 5 ? 1 : 0;
+    dual.current += ((a >= 5 ? 1 : 0) - dual.current) * k;
+    if (dGroup.current) {
+      dGroup.current.position.x = X_D + (1 - dual.current) * 3.2;
+      dGroup.current.visible = dual.current > 0.02;
+    }
     const target = a < 0 ? 0 : a >= 4 ? 1 : stops[Math.min(a, stops.length - 1)] + 0.01;
     head.current += (target - head.current) * (1 - Math.exp(-dt * 1.8));
     tubeMat.uniforms.uHead.value = head.current;
     tubeMat.uniforms.uTime.value = state.clock.elapsedTime;
+    tubeMatD.uniforms.uHead.value = a === 5 ? Math.min(1, tubeMatD.uniforms.uHead.value + dt * 0.5) : 0;
+    tubeMatD.uniforms.uTime.value = state.clock.elapsedTime;
+    tubeMatD.uniforms.uOpacity.value = dual.current;
   });
 
   return (
@@ -899,19 +1005,27 @@ function Stack() {
             <Door w={W - 0.024} h={H_AS - 0.6 - 0.07} open={doorAS} label="SI-150" hinge="top" status trim={false} />
           </group>
         </group>
-        {[
-          { x: X_IC, dual: false },
-          { x: X_D, dual: true },
-        ].map(({ x, dual }) => (
-          <group key={x} position={[x, 0, 0]}>
-            <Shell h={H_IC} />
-            <Internals dual={dual} glow={dual ? [glows.dPump, glows.dOven, glows.dSupp, glows.dCell] : [glows.pump, glows.oven, glows.supp, glows.cell]} />
-            <FrontStrip h={H_IC} />
-            <group position={[-W / 2 + 0.012 + 0.206, 0.08, ZF + 0.004]}>
-              <Door w={W - 0.024 - 0.206} h={H_IC - 0.14} open={dual ? doorD : doorIC} label={dual ? 'IC-150D' : 'IC-150'} hinge="right" />
-            </group>
+        <group position={[X_IC, 0, 0]}>
+          <Shell h={H_IC} />
+          <Internals glow={[glows.pump, glows.oven, glows.supp, glows.cell]} />
+          <FrontStrip h={H_IC} />
+          <group position={[-W / 2 + 0.012 + 0.206, 0.08, ZF + 0.004]}>
+            <Door w={W - 0.024 - 0.206} h={H_IC - 0.14} open={doorIC} label="IC-150" hinge="right" />
           </group>
-        ))}
+        </group>
+        <group ref={dGroup} position={[X_D + 3.2, 0, 0]} visible={false}>
+          <Shell h={H_IC} />
+          <Internals dual glow={[glows.dPump, glows.dOven, glows.dSupp, glows.dCell]} />
+          <FrontStrip h={H_IC} />
+          <group position={[-W / 2 + 0.012 + 0.206, 0.08, ZF + 0.004]}>
+            <Door w={W - 0.024 - 0.206} h={H_IC - 0.14} open={doorD} label="IC-150D" hinge="right" />
+          </group>
+          <mesh geometry={tubeD} material={tubeMatD} renderOrder={7} userData={{ noShadow: true }} />
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -FEET + 0.002, 0]} userData={{ noShadow: true }}>
+            <planeGeometry args={[W * 1.7, D * 1.3]} />
+            <meshBasicMaterial map={blobTex} transparent depthWrite={false} />
+          </mesh>
+        </group>
         <Bottles />
         <mesh geometry={tube} material={tubeMat} renderOrder={7} userData={{ noShadow: true }} />
       </group>
@@ -932,6 +1046,39 @@ function FocusLight() {
   return <pointLight ref={light} intensity={0} distance={4} decay={2} color="#e6efff" position={[0, 1.2, 2.5]} />;
 }
 
+/** Projects the current step's callout anchors to the screen (labels always sit above the geometry). */
+function Callouts() {
+  const { camera, size, gl } = useThree();
+  const v = useMemo(() => new THREE.Vector3(), []);
+  useFrame(() => {
+    // callouts live in the section overlay; offset by the canvas position inside it
+    const host = calloutEls[0]?.parentElement;
+    const cr = gl.domElement.getBoundingClientRect();
+    const hr = host?.getBoundingClientRect();
+    const ox = hr ? cr.left - hr.left : 0;
+    const oy = hr ? cr.top - hr.top : 0;
+    const a = instrumentState.active;
+    const list = a >= 0 && a <= 5 ? CALLOUTS[a] : [];
+    for (let i = 0; i < 2; i++) {
+      const el = calloutEls[i];
+      if (!el) continue;
+      const c = list[i];
+      if (!c) {
+        el.style.opacity = '0';
+        continue;
+      }
+      v.set(c.at[0], c.at[1] + FEET, c.at[2]).project(camera);
+      const x = (v.x * 0.5 + 0.5) * size.width;
+      const y = (-v.y * 0.5 + 0.5) * size.height;
+      const ok = v.z < 1 && x > 20 && x < size.width - 60 && y > 30 && y < size.height - 20;
+      el.style.opacity = ok ? '1' : '0';
+      el.classList.toggle('is-left', hr ? x + ox > hr.width - 250 : false);
+      el.style.transform = `translate3d(${(x + ox).toFixed(1)}px, ${(y + oy).toFixed(1)}px, 0)`;
+    }
+  });
+  return null;
+}
+
 function Rig({ reducedMotion }: { reducedMotion: boolean }) {
   const { camera, size } = useThree();
   const pos = useMemo(() => new THREE.Vector3(2.5, 2.4, 7.5), []);
@@ -939,21 +1086,21 @@ function Rig({ reducedMotion }: { reducedMotion: boolean }) {
   const tPos = useMemo(() => new THREE.Vector3(), []);
   const tLook = useMemo(() => new THREE.Vector3(), []);
   useFrame((_, dt) => {
-    const portrait = size.width / size.height < 1;
+    const portrait = size.width / size.height < 0.8;
     const a = instrumentState.active;
-    if (a < 0 || a > 5 || reducedMotion) {
-      if (portrait) {
-        tPos.set(2.2, 3.4, 19.5);
-        tLook.set(0.0, 0.6, 0);
-      } else {
-        tPos.set(2.8, 2.7, 9.0);
-        tLook.set(-0.9, 1.4, 0);
-      }
+    // the canvas has its own region beside / between the text, so subjects are simply centred
+    const wide = size.width / size.height > 1.15 ? 0.85 : 1;
+    if (a < 0 || reducedMotion) {
+      tPos.set(1.4, 2.4, 7.4 * wide);
+      tLook.set(-0.68, 1.15, 0); // closed single system
+    } else if (a > 5) {
+      tPos.set(2.2, 2.6, 9.4 * wide);
+      tLook.set(-0.05, 1.2, 0); // closed dual system
     } else {
       const f = FOCUS[a];
-      const dist = portrait ? 7.5 : a === 5 ? 6.2 : 4.6;
-      tPos.set(f[0] + (portrait ? 0.2 : 1.1), f[1] + 0.55, f[2] + dist);
-      tLook.set(f[0] - (portrait ? 0 : 1.2), f[1] - 0.05, f[2]);
+      const dist = (a === 5 ? 7.4 : a === 2 ? 5.2 : a === 0 ? 4.6 : 4.3) * (portrait ? 1.25 : 1) * wide;
+      tPos.set(f[0] + 0.75, f[1] + 0.45, f[2] + dist);
+      tLook.set(f[0], f[1], f[2]);
     }
     tPos.x += heroState.pointerX * 0.3;
     tPos.y += heroState.pointerY * 0.2;
@@ -1007,6 +1154,7 @@ export default function InstrumentCanvas({ active, reducedMotion }: { active: bo
       <directionalLight position={[-3, 4, -6]} intensity={2.2} color="#9ec0ff" />
       <directionalLight position={[6, 2.5, -3]} intensity={1.2} color="#cfe0ff" />
       <Rig reducedMotion={reducedMotion} />
+      <Callouts />
       <Stack />
       <AdaptiveDpr min={q.dpr[0]} max={q.dpr[1]} />
     </Canvas>

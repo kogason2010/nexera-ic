@@ -5,8 +5,8 @@ import { gaussian, toPath } from '../../utils/math';
 
 const AX = 'rgba(170,195,225,0.28)';
 const GRID = 'rgba(170,195,225,0.07)';
-const TXT = 'rgba(133,146,163,1)';
-const FONT = { fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, letterSpacing: '0.04em' };
+const TXT = '#b8c3d1';
+const FONT = { fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, letterSpacing: '0.02em' };
 
 interface Frame {
   w: number;

@@ -15,7 +15,7 @@ const APPS = [
     id: 'analysis',
     name: 'Analysis',
     role: 'Daily operators',
-    text: 'Start-up, batch creation, analysis and shutdown on one screen. Batches are handed to LabSolutions in the background, so operators never have to touch it.',
+    text: 'Start-up, batch creation, analysis and shutdown on one screen. Batches are handed to LabSolutions in the background, so operators do not need to work in LabSolutions directly.',
   },
   {
     id: 'postrun',

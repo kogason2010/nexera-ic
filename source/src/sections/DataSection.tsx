@@ -3,7 +3,15 @@ import { CountUp } from '../components/CountUp';
 import { SectionIndex } from '../components/SectionIndex';
 import { SplitText } from '../components/SplitText';
 import { useReveal } from '../hooks/useReveal';
-import { CATIONS, EPA_A, EPA_B, SUPPRESSION } from '../data/nexera';
+import { CATIONS, EPA_A, EPA_B, SOURCES, SUPPRESSION } from '../data/nexera';
+
+function Src({ s }: { s: { label: string; url: string } }) {
+  return (
+    <a className="data-card__src mono" href={s.url} target="_blank" rel="noopener noreferrer">
+      Source: {s.label} ↗
+    </a>
+  );
+}
 import { gsap } from '../utils/gsap';
 import { AnionChromatogram, CationChromatogram, DbpChart, MdlChart } from './data/Charts';
 import '../styles/data.css';
@@ -51,6 +59,7 @@ export function DataSection() {
               <span className="mono muted">Shim-pack IC-SA3 · 4.5 mmol/L Na₂CO₃ · 0.85 mL/min · 40 °C</span>
             </figcaption>
             <AnionChromatogram />
+            <Src s={SOURCES.partA} />
           </figure>
 
           <figure className="data-card" data-reveal data-delay="0.05">
@@ -59,6 +68,7 @@ export function DataSection() {
               <span className="mono muted">Part A · n = 7 · r² ≥ 0.9995</span>
             </figcaption>
             <MdlChart />
+            <Src s={SOURCES.partA} />
           </figure>
 
           <figure className="data-card" data-reveal data-delay="0.1">
@@ -67,6 +77,7 @@ export function DataSection() {
               <span className="mono muted">200 µL injection · {EPA_B.runTime}</span>
             </figcaption>
             <DbpChart />
+            <Src s={SOURCES.partB} />
           </figure>
 
           <figure className="data-card" data-reveal data-delay="0.15">
@@ -75,6 +86,7 @@ export function DataSection() {
               <span className="mono muted">Shim-pack IC-C4 · 2.5 mmol/L MSA</span>
             </figcaption>
             <CationChromatogram />
+            <Src s={SOURCES.cations} />
           </figure>
 
           <div className="data-result" data-reveal data-delay="0.2">
@@ -112,7 +124,8 @@ export function DataSection() {
             <p className="data-result__note">
               Lifetime figures come from Shimadzu demonstrations ({SUPPRESSION.lifetimeConditions}). They are not a guaranteed
               service life. MDLs are study results under the stated conditions, not routine quantitation limits. Continuing
-              calibration checks stayed within 100 ± 10 % across ~{EPA_A.hours} hours of continuous Part A analysis.
+              calibration checks stayed within 100 ± 10 % across ~{EPA_A.hours} hours of continuous Part A analysis. Lifetime
+              data: Nexera IC customer presentation (2026), not publicly linked.
             </p>
           </div>
         </div>

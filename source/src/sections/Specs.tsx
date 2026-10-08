@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { SectionIndex } from '../components/SectionIndex';
 import { SplitText } from '../components/SplitText';
 import { useReveal } from '../hooks/useReveal';
-import { SPECS } from '../data/nexera';
+import { SOURCES, SPEC_CONFLICTS, SPECS } from '../data/nexera';
 import '../styles/specs.css';
 
 export function Specs() {
@@ -17,8 +17,12 @@ export function Specs() {
             <SplitText as="h2" id="specs-title" className="h-lg" text="The numbers, at a glance." />
           </div>
           <p className="lede" data-reveal>
-            Key figures from the Nexera IC specification sheet, customer presentation and system guide. Where those sources
-            disagree, the range is shown. Always confirm current specifications with Shimadzu before you buy.
+            Key figures from Shimadzu’s specifications page, the Nexera IC customer presentation and the system guide. Where
+            those sources disagree, both values are listed below as unresolved. Confirm current specifications with
+            Shimadzu.{' '}
+            <a href={SOURCES.spec.url} target="_blank" rel="noopener noreferrer">
+              Specifications page ↗
+            </a>
           </p>
         </div>
         <div className="specs__grid">
@@ -35,6 +39,24 @@ export function Specs() {
               </dl>
             </div>
           ))}
+        </div>
+        <div className="spec-conflicts" data-reveal>
+          <h3 className="mono spec-conflicts__title">Unresolved source discrepancies</h3>
+          <p className="spec-conflicts__lede">
+            These figures differ between Shimadzu’s own materials. They are shown side by side, not as a validated operating
+            range.
+          </p>
+          <dl>
+            {SPEC_CONFLICTS.map((c) => (
+              <div key={c.item} className="spec-conflict">
+                <dt>{c.item}</dt>
+                <dd>
+                  <span>{c.a}</span>
+                  <span>{c.b}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
     </section>

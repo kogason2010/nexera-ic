@@ -1,7 +1,9 @@
 import { type Peak, peakHeight, resolution, signalAt } from '../../utils/chroma';
 import { gaussian } from '../../utils/math';
 
-const MONO = '500 10.5px "IBM Plex Mono", ui-monospace, monospace';
+const MONO_L = '500 12px "IBM Plex Mono", ui-monospace, monospace';
+const MONO_S = '500 10.5px "IBM Plex Mono", ui-monospace, monospace';
+let MONO = MONO_L;
 
 function hexA(hex: string, a: number) {
   const n = parseInt(hex.slice(1), 16);
@@ -26,6 +28,7 @@ export interface ChromOpts {
  * retention time marker, integrated peak area, and the critical-pair resolution bracket.
  */
 export function drawChromatogram(ctx: CanvasRenderingContext2D, w: number, h: number, o: ChromOpts) {
+  MONO = w < 520 ? MONO_S : MONO_L;
   const pad = o.pad ?? { l: 44, r: 16, t: 40, b: 36 };
   const gx = pad.l;
   const gy = h - pad.b;

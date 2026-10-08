@@ -80,12 +80,54 @@ export const SUPPRESSION = {
   mdlNonSuppressed: '100 ppb',
 };
 
+/** Public source documents, linked beside the charts and specifications. */
+export const SOURCES = {
+  partA: {
+    label: 'Application News 01-01104A-EN · EPA 300.1 Part A',
+    url: 'https://www.shimadzu.com/an/sites/shimadzu.com.an/files/pim/pim_document_file/applications/application_note/26181/an_01-01104-en.pdf',
+  },
+  partB: { label: 'Application News 01-01153-EN · EPA 300.1 Part B', url: 'https://www.shimadzu.com/an/apl/26349/index.html' },
+  cations: { label: 'Application News 01-01134-EN · ASTM D6919-17 cations', url: 'https://www.shimadzu.com/an/apl/26500/index.html' },
+  spec: {
+    label: 'Shimadzu Nexera IC specifications page',
+    url: 'https://www.shimadzu.com/an/products/liquid-chromatography/ion-chromatograph/nexera-ic/spec.html',
+  },
+  apps: {
+    label: 'Nexera IC applications (Shimadzu)',
+    url: 'https://www.shimadzu.com/an/products/liquid-chromatography/ion-chromatograph/nexera-ic/applications.html',
+  },
+};
+
+/** Places where Shimadzu's own customer materials disagree. Shown as unresolved, not as a validated range. */
+export const SPEC_CONFLICTS: { item: string; a: string; b: string }[] = [
+  {
+    item: 'Pump flow and pressure',
+    a: 'Specifications page: 0.0001–5.0000 mL/min; maximum pressure 20 MPa standard, 35 MPa with options.',
+    b: 'Customer presentation (2026): 0–4.0000 mL/min at up to 35 MPa, and 4.0000–5.0000 mL/min at up to 15 MPa.',
+  },
+  {
+    item: 'Column oven accuracy',
+    a: 'Specifications page: ±0.4 °C at 30 °C (precision ±0.1 °C).',
+    b: 'Customer presentation: ±0.8 °C over 25–55 °C (precision ±0.1 °C).',
+  },
+  {
+    item: 'Autosampler area reproducibility',
+    a: 'Specifications page: ≤ 0.25 % RSD, total-volume injection, 10–200 µL (loop: ≤ 0.45 % variable, ≤ 0.25 % fixed).',
+    b: 'Customer presentation: < 0.5 % RSD over 10–1000 µL.',
+  },
+  {
+    item: 'IC-150 / IC-150D weight',
+    a: 'Specifications page and customer presentation: 31 kg.',
+    b: 'Approx. 35 kg in another Shimadzu document reviewed for this site.',
+  },
+];
+
 export const SPECS: { group: string; rows: [string, string][] }[] = [
   {
     group: 'IC-150 · Pump',
     rows: [
       ['Type', 'Tandem double plunger, micro plunger (10 µL per stroke), metal-free flow path'],
-      ['Flow rate', '0.0001–4.0000 mL/min at up to 35 MPa · 4.0001–5.0000 mL/min at up to 15 MPa'],
+      ['Flow rate', 'Up to 5 mL/min; pressure limits differ between sources (see below)'],
       ['Accuracy', 'Within ±2 % or ±2 µL/min, whichever is greater'],
       ['Precision', '0.06 % RSD or 0.02 min SD, whichever is greater'],
       ['Degassing', 'On-line degassing unit, standard'],
@@ -96,7 +138,7 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
     rows: [
       ['Method', 'Forced air circulation with eluent pre-heater (standard)'],
       ['Temperature', 'Up to 85 °C'],
-      ['Accuracy / precision', '±0.8 °C / ±0.1 °C (25–55 °C)'],
+      ['Precision', '±0.1 °C; accuracy differs between sources (see below)'],
       ['Columns', 'One 5 cm guard column plus one 25 cm column'],
     ],
   },
@@ -113,8 +155,8 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
     group: 'SI-150 · Autosampler',
     rows: [
       ['Injection', 'Full-volume (direct) or loop; dual systems use loop'],
-      ['Volume', '0.1–200 µL standard, up to 7.5 mL with extension loop'],
-      ['Area reproducibility', '< 0.5 % RSD (10–1000 µL)'],
+      ['Volume', 'Total-volume 0.1–200 µL · loop 0.1–140 µL'],
+      ['Area reproducibility', 'Differs between sources (see below)'],
       ['Capacity', '162 × 1.5 mL · 84 × 4 mL · 36 × 10 mL vials'],
       ['Functions', 'Automatic dilution and sample pretreatment'],
     ],
@@ -124,7 +166,7 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
     rows: [
       ['Anion suppressor', 'ICDS-Ai, electrodialytic, continuous regeneration, no acid regenerant'],
       ['Cation suppressor', 'ICDS-Ci, compatible with up to 10 mmol/L MSA'],
-      ['Eluent generation', 'Valve-switching dilution at 2×, 5× or 10×, up to 1.5 mL/min'],
+      ['Eluent generation', 'Valve-switching dilution of a concentrate at 2×, 5× or 10×'],
       ['Dual channel', 'IC-150D adds a second flow path for simultaneous anions + cations'],
       ['UV detector', 'SPD-40/40V mounts on top for UV-absorbing ions such as nitrite'],
     ],
@@ -132,7 +174,7 @@ export const SPECS: { group: string; rows: [string, string][] }[] = [
   {
     group: 'Footprint',
     rows: [
-      ['IC-150 / IC-150D', 'W 26 × H 49 × D 50 cm · approx. 31–35 kg (sources differ)'],
+      ['IC-150 / IC-150D', 'W 26 × H 49 × D 50 cm · 31 kg (one document says approx. 35 kg; see below)'],
       ['SI-150', 'W 26 × H 28 × D 50 cm · 13 kg'],
     ],
   },

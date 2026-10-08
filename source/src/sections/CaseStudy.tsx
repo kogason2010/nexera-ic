@@ -177,7 +177,14 @@ export function CaseStudy() {
         <p className="case__fine body-s">
           The two traces come from separate application notes shown on a shared time axis to illustrate the dual-channel idea.
           Conditions: anions on Shim-pack IC-SA3, 4.5 mmol/L Na₂CO₃, 0.85 mL/min; cations on Shim-pack IC-C4, 2.5 mmol/L MSA,
-          1.0 mL/min.
+          1.0 mL/min.{' '}
+          <a href="https://www.shimadzu.com/an/sites/shimadzu.com.an/files/pim/pim_document_file/applications/application_note/26181/an_01-01104-en.pdf" target="_blank" rel="noopener noreferrer">
+            Anion source ↗
+          </a>{' '}
+          ·{' '}
+          <a href="https://www.shimadzu.com/an/apl/26500/index.html" target="_blank" rel="noopener noreferrer">
+            Cation source ↗
+          </a>
         </p>
       </div>
     </section>

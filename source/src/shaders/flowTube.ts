@@ -15,6 +15,9 @@ export const flowTubeVertex = /* glsl */ `
 export const flowTubeFragment = /* glsl */ `
   uniform float uTime;
   uniform float uHead;
+  uniform vec3 uColA;
+  uniform vec3 uColB;
+  uniform float uOpacity;
   varying vec2 vUv;
   varying vec3 vN;
   varying vec3 vV;
@@ -25,9 +28,9 @@ export const flowTubeFragment = /* glsl */ `
     float dash = 0.5 + 0.5 * sin((vUv.x * 160.0 - uTime * 6.0));
     float head = exp(-pow((vUv.x - uHead) / 0.012, 2.0));
     vec3 glass = vec3(0.55, 0.65, 0.78) * (0.15 + fres * 0.6);
-    vec3 flow = mix(vec3(0.39, 0.83, 1.0), vec3(0.76, 0.61, 1.0), vUv.x) * (0.35 + 0.35 * dash);
-    vec3 col = glass + flow * filled + vec3(1.0) * head * 1.4;
-    float a = 0.35 + fres * 0.4 + filled * 0.4 + head;
-    gl_FragColor = vec4(col, clamp(a, 0.0, 1.0));
+    vec3 flow = mix(uColA, uColB, vUv.x) * (0.35 + 0.35 * dash);
+    vec3 col = glass + flow * filled + vec3(1.0) * head * 0.6;
+    float a = 0.35 + fres * 0.4 + filled * 0.4 + head * 0.5;
+    gl_FragColor = vec4(col, clamp(a, 0.0, 1.0) * uOpacity);
   }
 `;

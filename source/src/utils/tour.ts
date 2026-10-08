@@ -1,18 +1,19 @@
 import { getLenis } from '../hooks/useSmoothScroll';
 
 /**
- * Self-running demo tour: scrolls the whole page at a steady pace, pausing briefly at the top of
- * each section so the scroll-driven scenes have time to play. Any wheel, touch or key input
- * (or the Stop button) hands control straight back to the visitor.
+ * Guided auto-scroll tour of this page (not a product demonstration). It scrolls at a steady pace and
+ * pauses briefly at each section so the scroll-driven scenes can play. The visitor stays in control:
+ * any wheel, touch or scroll key pauses it; Space or P pauses/resumes; Escape stops it.
  */
 export interface TourState {
   running: boolean;
+  paused: boolean;
   progress: number;
   label: string;
 }
 
 type Listener = (s: TourState) => void;
-let state: TourState = { running: false, progress: 0, label: '' };
+let state: TourState = { running: false, paused: false, progress: 0, label: '' };
 const listeners = new Set<Listener>();
 
 export function subscribeTour(l: Listener) {
@@ -31,9 +32,13 @@ function emit(p: Partial<TourState>) {
 let raf = 0;
 let timer = 0;
 let detach: (() => void) | null = null;
+let sections: HTMLElement[] = [];
+let next = 0;
+let y = 0;
 
 const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
 const topOf = (el: HTMLElement) => el.getBoundingClientRect().top + window.scrollY;
+const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function labelFor(el: HTMLElement) {
   if (el.id === 'top') return 'Introduction · the flow path';
@@ -44,66 +49,60 @@ function labelFor(el: HTMLElement) {
   return h ? (h.length > 42 ? `${h.slice(0, 40)}…` : h) : 'Overview';
 }
 
-function setY(y: number) {
+function setY(v: number) {
   const lenis = getLenis();
-  if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
-  else window.scrollTo(0, y);
+  if (lenis) lenis.scrollTo(v, { immediate: true, force: true });
+  else window.scrollTo(0, v);
 }
 
-function attachInterrupts() {
+function attachInputs() {
   const isControl = (t: EventTarget | null) => t instanceof Element && !!t.closest('[data-tour-control]');
-  const stopIf = (e: Event) => {
-    if (!isControl(e.target)) stopTour();
+  const userScroll = (e: Event) => {
+    if (!isControl(e.target) && state.running && !state.paused) pauseTour();
   };
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' || ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(e.key)) {
-      if (e.key === ' ' && isControl(e.target)) return;
-      stopTour();
+    if (!state.running) return;
+    if (e.key === 'Escape') return stopTour();
+    if ((e.key === ' ' || e.key === 'p' || e.key === 'P') && !isControl(e.target)) {
+      e.preventDefault();
+      return state.paused ? resumeTour() : pauseTour();
     }
+    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(e.key) && !state.paused) pauseTour();
   };
-  window.addEventListener('wheel', stopIf, { passive: true });
-  window.addEventListener('touchstart', stopIf, { passive: true });
+  window.addEventListener('wheel', userScroll, { passive: true });
+  window.addEventListener('touchstart', userScroll, { passive: true });
   window.addEventListener('keydown', onKey);
   return () => {
-    window.removeEventListener('wheel', stopIf);
-    window.removeEventListener('touchstart', stopIf);
+    window.removeEventListener('wheel', userScroll);
+    window.removeEventListener('touchstart', userScroll);
     window.removeEventListener('keydown', onKey);
   };
 }
 
-export function startTour() {
-  if (state.running) return;
-  const sections = [...document.querySelectorAll<HTMLElement>('main > section, footer')];
-  if (!sections.length) return;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let y = window.scrollY;
-  if (y >= maxScroll() - 8) {
-    y = 0;
-    setY(0);
-  }
-  let next = sections.findIndex((s) => topOf(s) > y + 4);
+function syncFromScroll() {
+  y = window.scrollY;
+  next = sections.findIndex((s) => topOf(s) > y + 4);
   if (next < 0) next = sections.length;
-  const current = sections[Math.max(0, next - 1)];
-  emit({ running: true, label: labelFor(current), progress: y / (maxScroll() || 1) });
-  window.setTimeout(() => {
-    if (state.running) detach = attachInterrupts();
-  }, 0);
+  emit({ label: labelFor(sections[Math.max(0, next - 1)]), progress: y / (maxScroll() || 1) });
+}
 
-  if (reduced) {
+function run() {
+  cancelAnimationFrame(raf);
+  clearTimeout(timer);
+  if (reduced()) {
     // no continuous motion: hop section to section
     const hop = () => {
       if (next >= sections.length) return stopTour();
       const el = sections[next++];
       window.scrollTo(0, Math.min(maxScroll(), topOf(el)));
       emit({ label: labelFor(el), progress: window.scrollY / (maxScroll() || 1) });
-      timer = window.setTimeout(hop, 4000);
+      timer = window.setTimeout(hop, 5000);
     };
-    timer = window.setTimeout(hop, 1500);
+    timer = window.setTimeout(hop, 1200);
     return;
   }
-
   let last = performance.now();
-  let pauseUntil = last + 900;
+  let pauseUntil = last + 700;
   const step = (now: number) => {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
@@ -135,15 +134,43 @@ export function startTour() {
   raf = requestAnimationFrame(step);
 }
 
+export function startTour() {
+  if (state.running) return state.paused ? resumeTour() : undefined;
+  sections = [...document.querySelectorAll<HTMLElement>('main > section, footer')];
+  if (!sections.length) return;
+  if (window.scrollY >= maxScroll() - 8) setY(0);
+  emit({ running: true, paused: false });
+  syncFromScroll();
+  window.setTimeout(() => {
+    if (state.running && !detach) detach = attachInputs();
+  }, 0);
+  run();
+}
+
+export function pauseTour() {
+  if (!state.running || state.paused) return;
+  cancelAnimationFrame(raf);
+  clearTimeout(timer);
+  emit({ paused: true });
+}
+
+export function resumeTour() {
+  if (!state.running || !state.paused) return;
+  emit({ paused: false });
+  syncFromScroll();
+  run();
+}
+
 export function stopTour() {
   cancelAnimationFrame(raf);
   clearTimeout(timer);
   detach?.();
   detach = null;
-  if (state.running) emit({ running: false });
+  if (state.running) emit({ running: false, paused: false });
 }
 
 export function toggleTour() {
-  if (state.running) stopTour();
-  else startTour();
+  if (!state.running) startTour();
+  else if (state.paused) resumeTour();
+  else pauseTour();
 }

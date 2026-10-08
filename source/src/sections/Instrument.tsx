@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useState } from 'react';
 import { SectionIndex } from '../components/SectionIndex';
-import { MODULES } from '../data/instrument';
+import { CALLOUT_TEXT, MODULES } from '../data/instrument';
 import { useInView } from '../hooks/useInView';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { instrumentState } from '../utils/scrollStore';
@@ -8,6 +8,12 @@ import { scrollToY } from '../hooks/useSmoothScroll';
 import '../styles/instrument.css';
 
 const InstrumentCanvas = lazy(() => import('../three/InstrumentCanvas'));
+import { CALLOUTS, calloutEls } from '../three/instrumentCallouts';
+
+function calloutText(active: number, i: number) {
+  const c = active >= 0 && active <= 5 ? CALLOUTS[active][i] : undefined;
+  return c ? CALLOUT_TEXT[c.key] : '';
+}
 
 /** Scroll stretch: overview → each of the six modules → overview. */
 function activeFromProgress(p: number) {
@@ -54,7 +60,7 @@ export function Instrument({ webgl, reducedMotion }: { webgl: boolean; reducedMo
           <header className="instrument__head">
             <SectionIndex num="04" label="The system" />
             <h2 id="inst-title" className="h-md">
-              Compact by design. <span className="muted">Everything an ion needs, just 26 cm wide.</span>
+              Compact by design. <span className="muted">Each IC-150 main unit is just 26 cm wide.</span>
             </h2>
           </header>
 
@@ -68,11 +74,12 @@ export function Instrument({ webgl, reducedMotion }: { webgl: boolean; reducedMo
                 <p>{mod.text}</p>
               </div>
             ) : (
-              <div key="overview" className="instrument__card">
-                <p className="mono">System overview</p>
+              <div key={active > 5 ? 'dual' : 'single'} className="instrument__card">
+                <p className="mono">{active > 5 ? 'Closed view · dual system' : 'Closed view · single system'}</p>
                 <p>
-                  SI-150 autosampler, IC-150 main unit and an optional IC-150D second channel. Scroll to open each module and
-                  follow the flow path.
+                  {active > 5
+                    ? 'SI-150 autosampler, IC-150 and IC-150D: two complete analytical channels for simultaneous anions and cations.'
+                    : 'SI-150 autosampler with one IC-150 main unit, each 26 cm wide (H 28 cm and 49 cm, D 50 cm). Scroll to open the doors and follow the flow path.'}
                 </p>
               </div>
             )}
@@ -88,7 +95,21 @@ export function Instrument({ webgl, reducedMotion }: { webgl: boolean; reducedMo
             ))}
           </ol>
         </div>
-        <p className="instrument__note mono">Illustrative 3D model · rendered in real time</p>
+        <div className="instrument__callouts" aria-hidden="true">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="inst-callout"
+              ref={(el) => {
+                calloutEls[i] = el;
+              }}
+            >
+              <span className="inst-callout__dot" />
+              <span className="inst-callout__text">{calloutText(active, i)}</span>
+            </div>
+          ))}
+        </div>
+        <p className="instrument__note mono">Illustrative 3D model · interior simplified from Shimadzu product images</p>
       </div>
     </section>
   );

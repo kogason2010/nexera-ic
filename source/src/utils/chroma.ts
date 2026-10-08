@@ -100,7 +100,8 @@ export function heroSignal(tSim: number) {
 export const ELUENT = {
   reference: 4.5, // mmol/L Na2CO3 used in the application note
   min: 2.5,
-  max: 9,
+  // ICDS-Ai is documented for up to 15 mmol/L Na⁺; Na₂CO₃ carries 2 Na⁺, so 7.5 mmol/L is the ceiling
+  max: 7.5,
   plates: 12000,
   t0: EPA_A.voidTime,
 };

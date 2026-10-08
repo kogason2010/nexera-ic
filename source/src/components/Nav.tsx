@@ -4,7 +4,7 @@ import { ScrollTrigger } from '../utils/gsap';
 import { scrollToTarget, getLenis } from '../hooks/useSmoothScroll';
 import { BrandMark } from './Icons';
 import { MagneticButton } from './MagneticButton';
-import { startTour, subscribeTour, toggleTour } from '../utils/tour';
+import { startTour, stopTour, subscribeTour } from '../utils/tour';
 
 export function Nav() {
   const [solid, setSolid] = useState(false);
@@ -92,11 +92,11 @@ export function Nav() {
             </ul>
           </nav>
           <div className="nav__actions">
-          <button type="button" className="nav__demo" data-tour-control onClick={() => toggleTour()} aria-pressed={touring}>
+          <button type="button" className="nav__demo" data-tour-control onClick={() => (touring ? stopTour() : startTour())} aria-pressed={touring} aria-label={touring ? 'Stop guided tour' : 'Start guided tour (auto-scrolls this page)'}>
             <svg viewBox="0 0 16 16" aria-hidden="true">
               {touring ? <rect x="3" y="3" width="10" height="10" rx="2" /> : <path d="M4 2.5v11l9.5-5.5Z" />}
             </svg>
-            {touring ? 'Stop' : 'Demo'}
+            {touring ? 'Stop tour' : 'Tour'}
           </button>
           <MagneticButton href="#contact" variant="ghost" className="nav__cta">
             <span className="btn__label">Contact</span>
@@ -138,8 +138,8 @@ export function Nav() {
                   window.setTimeout(startTour, 450);
                 }}
               >
-                <span>▶ Demo tour</span>
-                <span className="mono">auto</span>
+                <span>▶ Guided tour</span>
+                <span className="mono">auto-scroll</span>
               </a>
             </li>
           </ol>

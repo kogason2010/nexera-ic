@@ -1,42 +1,38 @@
-import { HERO_SIM_END } from '../../utils/chroma';
 import { clamp, invLerp, lerp, smoothstep } from '../../utils/math';
+import { BANDS, MIN_TO_SIM, S, timeToReach } from './flowPath';
 
 /**
- * The hero's choreography, expressed as pure functions of scroll progress p ∈ [0, 1].
+ * The hero's choreography as pure functions of scroll progress p ∈ [0, 1].
  *
- *  0.00–0.10  Sample      — mixed plug turning slowly, headline
- *  0.10–0.20  Injection   — plug is drawn into the column inlet
- *  0.18–0.46  Separation  — sim clock 0 → 15 s (bands pull apart, all four visible in the bed)
- *  0.46–0.86  Detection   — sim clock 15 s → end (bands cross the flow cell, trace is written)
- *  0.86–1.00  Insight     — camera pulls back to frame the finished chromatogram
+ *  0.00–0.18  Eluent & injection — eluent flows; the valve switches and the sample plug leaves the loop
+ *  0.18–0.42  Separation         — bands enter the ion-exchange column and pull apart
+ *  0.42–0.58  Suppression        — the first bands cross the membrane suppressor
+ *  0.58–0.86  Detection          — every band passes the conductivity cell; the chromatogram is written
+ *  0.86–1.00  Result             — the whole flow path and finished chromatogram
  */
 export const PHASES = [
-  { id: 'sample', label: 'Sample', start: 0.0, end: 0.2 },
-  { id: 'separation', label: 'Separation', start: 0.2, end: 0.42 },
+  { id: 'inject', label: 'Injection', start: 0.0, end: 0.18 },
+  { id: 'separation', label: 'Separation', start: 0.18, end: 0.42 },
   { id: 'suppression', label: 'Suppression', start: 0.42, end: 0.58 },
   { id: 'detection', label: 'Detection', start: 0.58, end: 0.86 },
   { id: 'insight', label: 'Result', start: 0.86, end: 1.0 },
 ] as const;
 
-const SIM_SPLIT = 15;
+const F = BANDS[0];
+const T_SEP_END = timeToReach(F, S.suppIn - 0.6); // fluoride about to leave the column tubing
+const T_SUPP_END = timeToReach(F, S.cellIn - 0.25); // fluoride about to enter the cell
+const T_END = 20 * MIN_TO_SIM; // 20 min run
 
 export function simClock(p: number) {
-  if (p < 0.18) return 0;
-  if (p < 0.46) return lerp(0, SIM_SPLIT, invLerp(0.18, 0.46, p));
-  return lerp(SIM_SPLIT, HERO_SIM_END, invLerp(0.46, 0.86, p));
+  if (p < 0.17) return 0;
+  if (p < 0.42) return lerp(0, T_SEP_END, invLerp(0.17, 0.42, p));
+  if (p < 0.58) return lerp(T_SEP_END, T_SUPP_END, invLerp(0.42, 0.58, p));
+  if (p < 0.86) return lerp(T_SUPP_END, T_END, invLerp(0.58, 0.86, p));
+  return T_END;
 }
 
 export function injectAmount(p: number) {
-  return smoothstep(0.09, 0.2, p);
-}
-
-/** How much analyte colour is revealed (mixture looks uniform until separation is visible). */
-export function revealAmount(p: number) {
-  return smoothstep(0.24, 0.4, p);
-}
-
-export function particleFade(p: number) {
-  return lerp(1, 0.35, smoothstep(0.9, 1.0, p));
+  return smoothstep(0.09, 0.15, p);
 }
 
 export interface CamKey {
@@ -46,20 +42,22 @@ export interface CamKey {
 }
 
 export const CAMERA_KEYS: CamKey[] = [
-  { p: 0.0, pos: [-9.6, 0.9, 6.6], target: [-9.1, 0.35, 0] },
-  { p: 0.1, pos: [-8.6, 0.7, 5.4], target: [-7.8, 0.25, 0] },
-  { p: 0.2, pos: [-6.6, 0.8, 4.4], target: [-5.0, 0.05, 0] },
-  { p: 0.3, pos: [-3.8, 1.05, 4.6], target: [-2.6, 0.0, 0] },
-  { p: 0.42, pos: [1.3, 1.5, 11.6], target: [1.7, 0.3, 0] },
-  { p: 0.52, pos: [4.5, 0.9, 4.4], target: [5.3, 0.3, 0] },
-  { p: 0.64, pos: [4.4, 1.6, 7.8], target: [5.1, 0.95, 0] },
-  { p: 0.76, pos: [3.9, 1.9, 9.4], target: [3.8, 1.3, 0] },
-  { p: 0.88, pos: [2.6, 2.0, 11.4], target: [2.0, 1.15, 0] },
-  { p: 1.0, pos: [1.4, 1.9, 14.0], target: [1.4, 1.0, 0] },
+  { p: 0.0, pos: [-16.6, 0.5, 11.0], target: [-17.5, -0.3, 0] },
+  { p: 0.08, pos: [-11.9, 0.3, 7.6], target: [-12.3, -0.7, 0] },
+  { p: 0.15, pos: [-8.9, 0.3, 6.2], target: [-9.3, -0.8, 0] },
+  { p: 0.22, pos: [-6.3, 0.6, 5.2], target: [-6.4, -0.45, 0] },
+  { p: 0.32, pos: [-3.4, 0.6, 4.3], target: [-3.5, -0.4, 0] },
+  { p: 0.41, pos: [-1.4, 1.0, 8.4], target: [-1.5, -1.1, 0] },
+  { p: 0.47, pos: [6.0, 0.1, 5.4], target: [5.9, -0.54, 0] },
+  { p: 0.56, pos: [6.4, 0.2, 5.6], target: [6.3, -0.5, 0] },
+  { p: 0.64, pos: [9.8, 1.25, 8.2], target: [9.6, 0.85, 0] },
+  { p: 0.8, pos: [9.7, 1.3, 8.6], target: [9.5, 0.85, 0] },
+  { p: 0.9, pos: [-3.1, 2.0, 27.0], target: [-3.1, 1.0, 0] },
+  { p: 1.0, pos: [-3.1, 2.1, 28.0], target: [-3.1, 1.0, 0] },
 ];
 
-/** Reduced-motion: a single composed frame that shows the whole instrument path. */
-export const STATIC_CAMERA: CamKey = { p: 0, pos: [0.6, 1.6, 14.5], target: [0.6, 0.9, 0] };
+/** Reduced motion: one composed frame showing the whole flow path. */
+export const STATIC_CAMERA: CamKey = { p: 0, pos: [-3.1, 1.3, 28.0], target: [-3.1, 0.1, 0] };
 
 export function cameraAt(p: number, out: { pos: number[]; target: number[] }) {
   const keys = CAMERA_KEYS;

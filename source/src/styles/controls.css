@@ -1,68 +1,55 @@
-/* Floating page controls: demo tour + jump to top / bottom */
+/* Compact page controls: guided tour (play / pause / stop) + jump to top / end */
 .scroll-ctl {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: 10px;
+  bottom: 104px;
   z-index: 96;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  align-items: flex-end;
   gap: 8px;
-  width: 212px;
 }
-.scroll-ctl button {
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-.scroll-ctl__demo {
+.scroll-ctl__stack {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px 8px 8px;
-  border: 1px solid rgba(99, 211, 255, 0.55);
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(99, 211, 255, 0.95), rgba(142, 162, 255, 0.95));
-  color: #04121c !important;
-  text-align: left;
-  box-shadow: 0 10px 34px -8px rgba(99, 211, 255, 0.55), 0 0 0 0 rgba(99, 211, 255, 0.5);
-  animation: demo-pulse 2.6s ease-out infinite;
-  transition: transform 0.3s var(--ease), box-shadow 0.3s;
+  background: rgba(8, 11, 16, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
-.scroll-ctl__demo:hover {
-  transform: translateY(-2px);
-}
-.scroll-ctl__demo:focus-visible,
-.scroll-ctl__jump:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 3px;
-}
-.is-touring .scroll-ctl__demo {
-  animation: none;
-  background: rgba(10, 16, 26, 0.92);
-  color: var(--text) !important;
-  border-color: rgba(99, 211, 255, 0.6);
-}
-@keyframes demo-pulse {
-  0% {
-    box-shadow: 0 10px 34px -8px rgba(99, 211, 255, 0.55), 0 0 0 0 rgba(99, 211, 255, 0.5);
-  }
-  70%,
-  100% {
-    box-shadow: 0 10px 34px -8px rgba(99, 211, 255, 0.55), 0 0 0 14px rgba(99, 211, 255, 0);
-  }
-}
-.scroll-ctl__ring {
-  position: relative;
-  flex: none;
+.scroll-ctl__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   width: 44px;
-  height: 44px;
+  padding: 3px 0;
+  border-radius: 999px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.25s, opacity 0.25s;
+}
+.scroll-ctl__btn:hover {
+  background: rgba(99, 211, 255, 0.12);
+}
+.scroll-ctl__btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+.scroll-ctl__btn.is-dim {
+  opacity: 0.45;
+}
+.scroll-ctl__icon {
+  position: relative;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: rgba(4, 18, 28, 0.9);
+  width: 32px;
+  height: 32px;
 }
-.scroll-ctl__ring > svg:first-child {
+.scroll-ctl__ring {
   position: absolute;
   inset: 0;
   transform: rotate(-90deg);
@@ -72,103 +59,51 @@
   stroke-width: 2.5;
 }
 .scroll-ctl__ring .track {
-  stroke: rgba(255, 255, 255, 0.12);
+  stroke: rgba(99, 211, 255, 0.35);
 }
 .scroll-ctl__ring .fill {
   stroke: var(--cyan);
   stroke-linecap: round;
   transition: stroke-dashoffset 0.25s linear;
 }
-.scroll-ctl__ring .icon {
-  width: 16px;
-  height: 16px;
+.scroll-ctl .glyph {
+  width: 14px;
+  height: 14px;
   fill: var(--cyan);
 }
-.scroll-ctl__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  line-height: 1.1;
-}
-.scroll-ctl__title {
-  font-family: var(--display);
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.scroll-ctl__sub {
+.scroll-ctl__txt {
+  font-family: var(--mono);
   font-size: 10px;
-  font-weight: 500;
-  opacity: 0.85;
-}
-.scroll-ctl__pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.scroll-ctl__jump {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: rgba(10, 14, 20, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-size: 14px;
-  font-weight: 500;
-  transition: background 0.25s, border-color 0.25s, opacity 0.25s;
-}
-.scroll-ctl__jump svg {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  fill: var(--cyan);
-}
-.scroll-ctl__jump:hover {
-  background: rgba(30, 44, 62, 0.95);
-  border-color: rgba(99, 211, 255, 0.6);
-}
-.scroll-ctl__jump.is-dim {
-  opacity: 0.45;
-}
-.scroll-ctl__now,
-.scroll-ctl__hint {
-  margin: 0;
-  padding: 8px 12px;
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  background: rgba(10, 14, 20, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  font-size: 11px;
-  color: var(--text-2);
-  animation: ctl-in 0.5s var(--ease);
+  color: #c8d2de;
 }
 .scroll-ctl__now {
+  margin: 0 0 6px;
+  max-width: 230px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(8, 11, 16, 0.9);
+  font-size: 10.5px;
+  color: var(--text-2);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 .scroll-ctl__dot {
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ff5d5d;
-  box-shadow: 0 0 10px #ff5d5d;
-  animation: rec 1.2s ease-in-out infinite;
+  background: var(--cyan);
+  animation: tourpulse 1.2s ease-in-out infinite;
 }
-@keyframes rec {
+.scroll-ctl__dot.is-paused {
+  animation: none;
+  background: var(--amber);
+}
+@keyframes tourpulse {
   50% {
     opacity: 0.3;
-  }
-}
-@keyframes ctl-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
   }
 }
 
@@ -182,11 +117,11 @@
   align-items: center;
   gap: 8px;
   height: 40px;
-  padding: 0 16px;
+  padding: 0 14px;
   margin-right: 10px;
-  border: 1px solid rgba(99, 211, 255, 0.55);
+  border: 1px solid rgba(99, 211, 255, 0.45);
   border-radius: 999px;
-  background: rgba(99, 211, 255, 0.12);
+  background: rgba(99, 211, 255, 0.08);
   color: var(--text);
   font: inherit;
   font-size: 14px;
@@ -194,7 +129,7 @@
   transition: background 0.25s;
 }
 .nav__demo:hover {
-  background: rgba(99, 211, 255, 0.24);
+  background: rgba(99, 211, 255, 0.2);
 }
 .nav__demo svg {
   width: 12px;
@@ -211,43 +146,37 @@
   }
 }
 @media (max-width: 700px) {
+  /* phones: a small horizontal pill in the corner, above the disclaimer ribbon */
   .scroll-ctl {
-    right: 12px;
-    bottom: 38px;
-    width: 150px;
-    gap: 6px;
+    right: 8px;
+    bottom: 34px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
   }
-  .scroll-ctl__demo {
-    padding: 6px 12px 6px 6px;
-    gap: 10px;
+  .scroll-ctl__stack {
+    flex-direction: row;
+    gap: 2px;
+    padding: 2px 4px;
   }
-  .scroll-ctl__ring {
-    width: 36px;
-    height: 36px;
+  .scroll-ctl__btn {
+    width: 38px;
+    padding: 2px 0;
   }
-  .scroll-ctl__title {
-    font-size: 14px;
+  .scroll-ctl__icon {
+    width: 28px;
+    height: 28px;
   }
-  .scroll-ctl__sub {
+  .scroll-ctl__txt {
     display: none;
   }
-  .scroll-ctl__now,
-  .scroll-ctl__hint {
+  .scroll-ctl__now {
+    margin: 0;
     font-size: 10px;
-    padding: 6px 10px;
-  }
-  .scroll-ctl__jump {
-    height: 38px;
-    gap: 4px;
-    font-size: 12.5px;
-  }
-  .scroll-ctl__jump svg {
-    width: 13px;
-    height: 13px;
+    max-width: 210px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .scroll-ctl__demo,
   .scroll-ctl__dot {
     animation: none;
   }

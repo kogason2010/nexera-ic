@@ -1,10 +1,11 @@
 import { clamp, gaussian, rng, smoothstep } from '../../utils/math';
 
-const MONO = '500 10.5px "IBM Plex Mono", ui-monospace, monospace';
-const BIG = '500 15px "IBM Plex Mono", ui-monospace, monospace';
+let MONO = '500 12px "IBM Plex Mono", ui-monospace, monospace';
+let BIG = '500 16px "IBM Plex Mono", ui-monospace, monospace';
+let PHONE = false;
 const SOFT = 'rgba(170,195,225,0.12)';
 const TEXT = 'rgba(214,226,238,0.9)';
-const MUTED = 'rgba(133,146,163,0.95)';
+const MUTED = 'rgba(176,189,205,0.95)';
 const NA = '#ffb877'; // sodium (eluent cation)
 const H = '#8fe3ff'; // hydrogen ion
 const CO3 = '#8ea2ff'; // carbonate
@@ -112,8 +113,9 @@ function drawMembrane(ctx: C, w: number, h: number, t: number) {
   ctx.fillRect(x0, ay - 4, x1 - x0, 4);
   ctx.fillRect(x0, ky, x1 - x0, 4);
   label(ctx, 'ANODE (+)   2 H₂O → 4 H⁺ + O₂ + 4 e⁻', x0, ay - 12, TEXT);
+  if (!PHONE) label(ctx, 'ANION SUPPRESSION · SCHEMATIC', x1, ay - 12, MUTED, 'right');
   label(ctx, 'CATHODE (−)   2 H₂O + 2 e⁻ → H₂ + 2 OH⁻', x0, ky + 22, TEXT);
-  label(ctx, 'ION-EXCHANGE MEMBRANES', x1, cy - ch / 2 - 8, MUTED, 'right');
+  if (!PHONE) label(ctx, 'CATION-EXCHANGE MEMBRANES', x1, cy - ch / 2 - 8, MUTED, 'right');
 
   for (let i = 0; i < 40; i++) {
     const p = P[i];
@@ -140,8 +142,10 @@ function drawMembrane(ctx: C, w: number, h: number, t: number) {
     const isNa = p.c > f * 1.15;
     ion(ctx, x, y, isNa ? NA : H, '+', isNa ? 4.2 : 3.6);
   }
-  label(ctx, 'ELUENT IN →', x0, cy + ch / 2 + 16, MUTED);
-  label(ctx, '→ TO DETECTOR', x1, cy + ch / 2 + 16, MUTED, 'right');
+  if (!PHONE) {
+    label(ctx, 'ELUENT IN →', x0, cy + ch / 2 + 16, MUTED);
+    label(ctx, '→ TO DETECTOR', x1, cy + ch / 2 + 16, MUTED, 'right');
+  }
   label(ctx, 'H⁺ in', x0 + 6, ay + 36, H);
   label(ctx, 'Na⁺ out', x0 + 6, ky - 28, NA);
 }
@@ -172,12 +176,73 @@ function drawResult(ctx: C, w: number, h: number, t: number, lp: number) {
   label(ctx, 'detection limits: ppm → ppb', ex, y0 + 224, MUTED);
 }
 
-/* 04 — cation suppression: S/N 125 → 3,215 */
+/* 04 — cation suppression: a different mechanism (anion exchange), then S/N 125 → 3,215 */
+const OH = '#9ff0ff';
+const MSA = '#ffcf8a';
+const CAT = '#6ee7c8';
 function drawCations(ctx: C, w: number, h: number, t: number, lp: number) {
+  // mechanism schematic
+  const x0 = w * 0.06;
+  const x1 = w * 0.94;
+  const cy = h * 0.3;
+  const ch = 36;
+  const ky = cy - ch / 2 - 46; // cathode (top)
+  const ay = cy + ch / 2 + 46; // anode (bottom)
+  ctx.fillStyle = 'rgba(110,231,200,0.05)';
+  ctx.fillRect(x0, cy - ch / 2, x1 - x0, ch);
+  ctx.strokeStyle = 'rgba(195,155,255,0.8)';
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x0, cy - ch / 2);
+  ctx.lineTo(x1, cy - ch / 2);
+  ctx.moveTo(x0, cy + ch / 2);
+  ctx.lineTo(x1, cy + ch / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(200,210,222,0.55)';
+  ctx.fillRect(x0, ky - 4, x1 - x0, 4);
+  ctx.fillRect(x0, ay, x1 - x0, 4);
+  label(ctx, 'CATHODE (−)   2 H₂O + 2 e⁻ → H₂ + 2 OH⁻', x0, ky - 12, TEXT);
+  if (!PHONE) label(ctx, 'CATION SUPPRESSION · SCHEMATIC', x1, ky - 12, MUTED, 'right');
+  label(ctx, 'ANODE (+)   2 H₂O → 4 H⁺ + O₂ + 4 e⁻', x0, ay + 22, TEXT);
+  if (!PHONE) label(ctx, 'ANION-EXCHANGE MEMBRANES', x1, cy + ch / 2 + 16, MUTED, 'right');
+  for (let i = 0; i < 16; i++) {
+    const p = P[90 + i];
+    const f = (t * 0.33 + p.a) % 1;
+    const x = x0 + 40 + p.b * (x1 - x0 - 120);
+    ion(ctx, x + f * 16, ky + 8 + f * (cy - ky - 8), OH, '−', 3.8); // OH⁻ in
+    ion(ctx, x + 22 + f * 16, cy + 4 + f * (ay - cy - 10), MSA, '−', 4.4); // methanesulfonate out
+  }
+  for (let i = 0; i < 46; i++) {
+    const p = P[110 + (i % 50)];
+    const f = (p.a + t * 0.12 + i * 0.013) % 1;
+    const x = x0 + f * (x1 - x0);
+    const y = cy - ch / 2 + 7 + p.b * (ch - 14);
+    if (i < 14) {
+      ion(ctx, x, y, CAT, '+', 4.6); // sample cation continues
+    } else {
+      // eluent H⁺ disappears as it meets OH⁻ (becomes water)
+      const gone = p.c < f * 1.2;
+      if (!gone) ion(ctx, x, y, H, '+', 3.4);
+      else if (p.d < 0.5) {
+        ctx.strokeStyle = 'rgba(150,170,190,0.55)';
+        ctx.beginPath();
+        ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+  if (!PHONE) label(ctx, 'MSA ELUENT IN →', x0, cy - ch / 2 - 6, MUTED);
+  label(ctx, 'OH⁻ in', x0 + 6, ky + 30, OH);
+  label(ctx, 'CH₃SO₃⁻ out', x0 + 6, ay - 12, MSA);
+  if (PHONE) label(ctx, 'H⁺ + OH⁻ → H₂O · M⁺ → M⁺OH⁻', x0, ay + 50, CAT);
+  else label(ctx, 'H⁺ + OH⁻ → H₂O   ·   M⁺ → M⁺OH⁻', x1, cy - ch / 2 - 6, CAT, 'right');
+
+  // result: non-suppressed vs suppressed sodium
   const k = smoothstep(0.1, 0.6, lp);
   const gw = w * 0.4;
-  const gh = h * 0.32;
-  const gy = h * 0.64;
+  const gh = h * 0.2;
+  const gy = h * 0.84;
   const panels = [
     { x: w * 0.05, title: 'NON-SUPPRESSED', sn: 125, noise: 0.11, bg: 0.25, col: '#ffd2a6' },
     { x: w * 0.55, title: 'SUPPRESSED', sn: 3215, noise: 0.006, bg: 0.05, col: '#e6f3ff' },
@@ -203,18 +268,21 @@ function drawCations(ctx: C, w: number, h: number, t: number, lp: number) {
     }
     ctx.stroke();
     ctx.lineWidth = 1;
-    label(ctx, p.title, p.x, gy - gh - 16, TEXT);
-    label(ctx, `S/N ${p.sn.toLocaleString('en-US')}`, p.x, gy + 28, i ? '#8fe3ff' : NA, 'left', BIG);
-    label(ctx, 'Na⁺ 50 ppb', p.x + gw, gy + 28, MUTED, 'right');
+    label(ctx, p.title, p.x, gy - gh - 12, TEXT);
+    label(ctx, `S/N ${p.sn.toLocaleString('en-US')}`, p.x, gy + 24, i ? '#8fe3ff' : NA, 'left', BIG);
+    label(ctx, 'Na⁺ 50 ppb', p.x + gw, gy + 24, MUTED, 'right');
     ctx.globalAlpha = prev;
   });
-  label(ctx, 'Methanesulfonic acid eluent becomes water before the detector', w / 2, h * 0.14, MUTED, 'center');
-  label(ctx, '≈ 30× higher signal-to-noise', w / 2, h * 0.92, '#8fe3ff', 'center', BIG);
 }
 
 export function drawWorkflow(ctx: C, w: number, h: number, t: number, progress: number) {
   const s = clamp(progress) * 4;
   const sc = Math.min(1, h / 520, w / 640);
+  // keep labels ≥ ~10 px on screen even when the diagram is scaled down for phones
+  const fs = Math.min(17, Math.max(12, 10 / sc));
+  MONO = `500 ${fs.toFixed(1)}px "IBM Plex Mono", ui-monospace, monospace`;
+  BIG = `500 ${(fs * 1.3).toFixed(1)}px "IBM Plex Mono", ui-monospace, monospace`;
+  PHONE = fs > 12.5;
   const W = w / sc;
   const Hh = h / sc;
   const stages = [drawProblem, drawMembrane, drawResult, drawCations];

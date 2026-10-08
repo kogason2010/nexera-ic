@@ -9,7 +9,7 @@ import { clamp, lerp, normal, rng, smoothstep } from '../utils/math';
 import { drawChromatogram } from './separation/drawChromatogram';
 import '../styles/separation.css';
 
-const C_START = 8.5;
+const C_START = 7.2;
 const C_END = ELUENT.reference;
 
 const rand = rng(77);
@@ -144,7 +144,7 @@ export function Separation() {
             <div className="separation__column">
               <div className="separation__column-labels mono">
                 <span>Inlet</span>
-                <span>Anion-exchange column · 250 × 4.0 mm</span>
+                <span>Shim-pack IC-SA3 · 250 × 4.0 mm · 5 µm</span>
                 <span>Suppressor → cell</span>
               </div>
               <canvas ref={columnCanvas} className="separation__column-canvas" aria-hidden="true" />
@@ -187,11 +187,15 @@ export function Separation() {
                     <span>Weaker · longer</span>
                     <span>Stronger · faster</span>
                   </span>
+                  <span className="sep-control__limit mono">
+                    Na⁺ = {(conc * 2).toFixed(1)} mmol/L · range capped at 7.5 mmol/L Na₂CO₃ (15 mmol/L Na⁺, the documented
+                    ICDS-Ai limit)
+                  </span>
                 </label>
 
                 <dl className="sep-metrics">
                   <div className={`sep-metric ${ok ? 'is-ok' : 'is-warn'}`}>
-                    <dt className="mono">Resolution · critical pair</dt>
+                    <dt className="mono">Resolution · critical pair · model</dt>
                     <dd>
                       <span className="display">{crit.rs.toFixed(2)}</span>
                       <span className="mono">
@@ -200,7 +204,7 @@ export function Separation() {
                     </dd>
                   </div>
                   <div className="sep-metric">
-                    <dt className="mono">Last peak</dt>
+                    <dt className="mono">Last peak · predicted</dt>
                     <dd>
                       <span className="display">{runTime.toFixed(1)}</span>
                       <span className="mono">min</span>
@@ -215,7 +219,7 @@ export function Separation() {
                 </dl>
 
                 <table className="sep-table">
-                  <caption className="sr-only">Retention time and retention factor per anion</caption>
+                  <caption className="sep-table__cap mono">Predicted by the model (illustrative)</caption>
                   <thead>
                     <tr className="mono">
                       <th scope="col">Anion</th>
@@ -239,9 +243,13 @@ export function Separation() {
             </div>
           </div>
           <p className="separation__note body-s">
-            At 4.5 mmol/L the retention times match Shimadzu’s EPA 300.1 Part A data on a Shim-pack IC-SA3. Other concentrations
-            use the stoichiometric ion-exchange model, log k = log k₀ − (x/y)·log[CO₃²⁻], an illustration rather than
-            measured data.
+            Illustrative model output. At 4.5 mmol/L the retention times match Shimadzu’s EPA 300.1 Part A data on a
+            Shim-pack IC-SA3; other concentrations use the stoichiometric ion-exchange model, log k = log k₀ − (x/y)·log[CO₃²⁻],
+            with a fixed plate count. Predicted retention times and resolution are not measured data, and the slider stops at
+            the suppressor’s documented sodium limit.{' '}
+            <a href="https://www.shimadzu.com/an/sites/shimadzu.com.an/files/pim/pim_document_file/applications/application_note/26181/an_01-01104-en.pdf" target="_blank" rel="noopener noreferrer">
+              Part A application note ↗
+            </a>
           </p>
         </div>
       </div>

@@ -33,10 +33,15 @@ export function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
       const dir = pos.clone().sub(target);
       const f = THREE.MathUtils.clamp(1.25 / aspect, 1, 2.3);
       pos.copy(target).add(dir.multiplyScalar(f));
-      if (heroFrame.p < 0.2 && !reducedMotion) {
-        // keep the sample plug centred rather than off to the right on phones
-        target.x += 1.3;
-        pos.x += 1.3;
+      if (!reducedMotion) {
+        // phones: centre the subject and lift it above the bottom captions
+        const p = heroFrame.p;
+        const dx = THREE.MathUtils.lerp(3.4, 0, THREE.MathUtils.smoothstep(p, 0.02, 0.1));
+        const dy = THREE.MathUtils.lerp(-1.6, -0.5, THREE.MathUtils.smoothstep(p, 0.02, 0.1));
+        target.x += dx;
+        pos.x += dx;
+        target.y += dy;
+        pos.y += dy;
       }
     }
 

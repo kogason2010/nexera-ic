@@ -47,6 +47,7 @@ export function MagneticButton({ href, variant = 'primary', children, className 
       ref={ref}
       href={href}
       className={`btn btn--${variant} ${className}`}
+      {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       onClick={(e) => {
         if (href.startsWith('#')) {
           e.preventDefault();

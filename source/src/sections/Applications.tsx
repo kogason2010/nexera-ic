@@ -8,7 +8,7 @@ import '../styles/applications.css';
 
 /** Analytical Intelligence features from the Nexera IC customer presentation, in workflow order. */
 const FEATURES = [
-  { id: 'level', stage: 'Eluent', name: 'Eluent level sensor', line: 'Watches the reservoir so a long batch never runs dry.' },
+  { id: 'level', stage: 'Eluent', name: 'Eluent level sensor', line: 'Monitors the eluent level in the reservoir during long batches (MPM-40 sensor).' },
   { id: 'dilution', stage: 'Eluent', name: 'Automatic eluent dilution', line: 'Mixes a concentrate with pure water at 2×, 5× or 10×. Less weighing, fewer mistakes.' },
   { id: 'purge', stage: 'Start-up', name: 'Auto-purge', line: 'Clears the lines before the first injection, hands-free.' },
   { id: 'flowpilot', stage: 'Start-up', name: 'Flow Pilot', line: 'Ramps the flow up gently to protect the column and extend its life.' },
@@ -73,9 +73,10 @@ export function Applications() {
             <SectionIndex num="08" label="Analytical intelligence" />
             <SplitText as="h2" id="apps-title" className="h-lg" text="The routine runs itself." />
             <p className="lede" data-reveal>
-              From the eluent bottle to the final report, the jobs that usually need an expert’s eye are automated. Students and
-              technicians get trustworthy data on day one. Availability depends on configuration: some functions are part of
-              the optional IC Solution software, which currently supports single-channel systems.
+              From the eluent bottle to the final report, many jobs that usually need an expert’s eye are assisted or automated:
+              guided start-up, level and baseline monitoring, automatic dilution and pass/fail flags. Availability depends on
+              configuration: some functions are part of the optional IC Solution software, which currently supports
+              single-channel systems.
             </p>
             <div className="apps__meta mono" aria-hidden="true">
               <span>

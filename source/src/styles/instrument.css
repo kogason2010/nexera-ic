@@ -15,7 +15,24 @@
 }
 .instrument-canvas {
   position: absolute !important;
-  inset: 0;
+  /* the 3D view has its own region, so it never runs under the heading or the step text */
+  top: calc(var(--nav-h) + 1vh);
+  bottom: 84px;
+  left: 38%;
+  right: 0;
+  width: auto !important;
+  height: auto !important;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 12%);
+}
+@media (max-width: 900px) {
+  .instrument-canvas {
+    left: 0;
+    top: calc(var(--nav-h) + 20vh);
+    bottom: 47vh;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  }
 }
 .instrument__shade {
   position: absolute;
@@ -70,9 +87,10 @@
 .instrument__index button {
   width: 100%;
   text-align: left;
-  padding: 14px 10px 0 0;
-  color: var(--dim);
-  font-size: 10.5px;
+  padding: 14px 10px 4px 0;
+  color: #9aa6b6;
+  font-size: 12.5px;
+  line-height: 1.35;
   transition: color 0.4s;
   position: relative;
 }
@@ -93,7 +111,7 @@
   transform: scaleX(1);
 }
 .instrument__index button.is-past {
-  color: var(--muted);
+  color: #b8c3d1;
 }
 .instrument__index button.is-active {
   color: var(--text);
@@ -104,12 +122,77 @@
 .instrument__index span {
   display: block;
   margin-bottom: 4px;
+  color: var(--cyan);
+  opacity: 0.8;
+}
+.inst-callout.is-left .inst-callout__text {
+  left: auto;
+  right: 26px;
+}
+.inst-callout.is-left .inst-callout__dot::after {
+  left: auto;
+  right: 8px;
+  transform: rotate(35deg);
+  transform-origin: right center;
+}
+.instrument__index button:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+.instrument__callouts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.inst-callout {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.35s;
+  will-change: transform;
+}
+.inst-callout__dot {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  background: rgba(6, 9, 14, 0.6);
+}
+.inst-callout__dot::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: -16px;
+  width: 26px;
+  height: 1px;
+  background: rgba(143, 227, 255, 0.7);
+  transform: rotate(-35deg);
+  transform-origin: left center;
+}
+.inst-callout__text {
+  position: absolute;
+  left: 26px;
+  top: -36px;
+  padding: 4px 9px;
+  border: 1px solid rgba(143, 227, 255, 0.45);
+  border-radius: 6px;
+  background: rgba(6, 9, 14, 0.85);
+  font-family: var(--body);
+  font-size: 12.5px;
+  color: var(--text);
+  white-space: nowrap;
 }
 .instrument__note {
   position: absolute;
   right: var(--gutter);
   top: calc(var(--nav-h) + 3vh + 8px);
-  font-size: 10px;
+  font-size: 11px;
+  color: #a9b6c7;
 }
 @media (max-width: 900px) {
   .instrument {
@@ -118,6 +201,13 @@
   .instrument__index {
     grid-template-columns: repeat(3, 1fr);
     row-gap: 6px;
+  }
+  .instrument__index button {
+    font-size: 11.5px;
+    padding-top: 10px;
+  }
+  .inst-callout__text {
+    font-size: 11px;
   }
   .instrument__note {
     display: none;

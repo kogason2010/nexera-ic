@@ -22,27 +22,27 @@ export const HERO_COPY = {
 export const HERO_PHASES = [
   {
     num: '01',
-    title: 'Sample',
-    text: 'A drop of drinking water carries fluoride, chloride, nitrite, bromide, nitrate, phosphate and sulfate, all dissolved together.',
+    title: 'Inject',
+    text: 'The pump drives sodium carbonate eluent through the flow path. The injection valve switches and the sample plug, seven anions dissolved together in drinking water, joins the liquid stream.',
   },
   {
     num: '02',
-    title: 'Separation',
-    text: 'Each anion competes with the carbonate eluent for the fixed charged sites of the anion-exchange column. Stronger competitors are held longer.',
+    title: 'Ion exchange',
+    text: 'Inside the column, sample anions are briefly held by fixed positive sites on the resin, competing with carbonate for those sites. Ions held more strongly spend longer at sites, so overlapping bands pull apart while the resin stays still and the liquid keeps moving.',
   },
   {
     num: '03',
     title: 'Suppression',
-    text: 'The eluent itself conducts electricity. The electrodialytic suppressor swaps its sodium for hydrogen ions, leaving weakly conducting carbonic acid, so the background falls and the analyte signal rises.',
+    text: 'The eluent itself conducts. In the membrane suppressor, Na⁺ leaves the analytical stream and H⁺ from water electrolysis enters it. Carbonate becomes weakly conducting carbonic acid, so the background falls while the sample anions flow on.',
   },
   {
     num: '04',
     title: 'Detection',
-    text: 'In a temperature-controlled conductivity cell inside the column oven, every passing band raises the conductance. Peak after peak, the chromatogram is written.',
+    text: 'Each band then flows through a small conductivity cell kept in the column oven. Electrodes sense the conductivity of the passing solution, and the chromatogram is written peak by peak.',
   },
   {
     num: '05',
     title: 'Result',
-    text: 'Seven inorganic anions resolved in under 20 minutes, the EPA Method 300.1 Part A separation, redrawn from Shimadzu’s application data.',
+    text: 'Seven inorganic anions in under 20 minutes (EPA 300.1 Part A), redrawn from Shimadzu’s application data. The cell effluent returns through the suppressor’s regenerant channels to waste, as in the application note flow chart.',
   },
 ];

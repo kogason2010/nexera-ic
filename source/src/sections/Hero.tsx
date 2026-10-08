@@ -5,11 +5,12 @@ import { ArrowDown, ArrowRight } from '../components/Icons';
 import { useInView } from '../hooks/useInView';
 import { useScrollProgress } from '../hooks/useScrollProgress';
 import { heroState } from '../utils/scrollStore';
-import { HERO_ANALYTES, HERO_COLUMN, heroArrival } from '../utils/chroma';
 import { smoothstep } from '../utils/math';
-import { heroFrame } from '../three/hero/heroFrame';
-import { heroAxisEl, heroLabelEls } from '../three/hero/labels';
+import { HERO_LABELS } from '../three/hero/labels';
+import { heroLabelEls } from '../three/hero/HeroLabels3D';
 import { PHASES, activePhase } from '../three/hero/timeline';
+import { FlowDiagram } from './hero/FlowDiagram';
+import { HeroChart, SuppressionGauge } from './hero/HeroChart';
 import { gsap } from '../utils/gsap';
 import '../styles/hero.css';
 
@@ -27,9 +28,9 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
   const intro = useRef<HTMLDivElement>(null);
   const railFill = useRef<HTMLDivElement>(null);
   const scrollCue = useRef<HTMLDivElement>(null);
-  const readT = useRef<HTMLSpanElement>(null);
-  const readA = useRef<HTMLSpanElement>(null);
-  const readout = useRef<HTMLDivElement>(null);
+  const sticky = useRef<HTMLDivElement>(null);
+  const gauge = useRef<HTMLDivElement>(null);
+  const note = useRef<HTMLParagraphElement>(null);
   const [phase, setPhase] = useState(0);
   const phaseRef = useRef(0);
   const visible = useInView(section, '0px');
@@ -51,10 +52,18 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
     if (railFill.current) {
       railFill.current.style.transform = `scaleY(${p.toFixed(4)})`;
       const rail = railFill.current.parentElement?.parentElement;
-      if (rail) rail.style.opacity = smoothstep(0.03, 0.09, p).toFixed(3);
+      if (rail) rail.style.opacity = (smoothstep(0.03, 0.09, p) * (1 - smoothstep(0.42, 0.45, p) * 0.85)).toFixed(3);
     }
+    // phones: the intro text fills the screen, so the scene stays dim behind it until scrolling starts
+    const cv = sticky.current?.querySelector<HTMLCanvasElement>('canvas');
+    if (cv) cv.style.opacity = window.innerWidth < 700 ? (0.16 + 0.84 * smoothstep(0.03, 0.08, p)).toFixed(3) : '1';
     if (scrollCue.current) scrollCue.current.style.opacity = (1 - smoothstep(0.0, 0.03, p)).toFixed(3);
-    if (readout.current) readout.current.style.opacity = smoothstep(0.17, 0.24, p).toFixed(3);
+    if (gauge.current) {
+      const g = smoothstep(0.44, 0.47, p) * (1 - smoothstep(0.56, 0.59, p));
+      gauge.current.style.opacity = g.toFixed(3);
+      gauge.current.style.visibility = g < 0.01 ? 'hidden' : 'visible';
+    }
+    if (note.current) note.current.style.opacity = (smoothstep(0.18, 0.22, p) * (1 - smoothstep(0.86, 0.9, p))).toFixed(3);
   });
 
   // pointer → normalized coordinates for camera parallax + particle field
@@ -66,19 +75,6 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
     window.addEventListener('pointermove', onMove, { passive: true });
     return () => window.removeEventListener('pointermove', onMove);
   }, []);
-
-  // live instrument readout (reads the same values that drive the detector)
-  useEffect(() => {
-    if (!visible) return;
-    let raf = 0;
-    const loop = () => {
-      if (readT.current) readT.current.textContent = (heroFrame.sim * HERO_COLUMN.simToMinutes).toFixed(2);
-      if (readA.current) readA.current.textContent = (heroFrame.signal * 6.2).toFixed(2);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [visible]);
 
   // headline entrance after the loader lifts
   useEffect(() => {
@@ -93,7 +89,7 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
 
   return (
     <section id="top" className="hero" ref={section} aria-labelledby="hero-title">
-      <div className="hero__sticky">
+      <div className="hero__sticky" ref={sticky}>
         <div className="hero__bg" aria-hidden="true" />
 
         {webgl ? (
@@ -101,38 +97,38 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
             <HeroCanvas active={visible} reducedMotion={reducedMotion} onReady={onSceneReady} />
           </Suspense>
         ) : (
-          <img
-            className="hero__fallback"
-            src="assets/images/hero-fallback.png"
-            alt="Illustration of seven anions separating inside an ion-exchange column, passing a suppressor and a conductivity cell, with the resulting chromatogram above."
-            onLoad={onSceneReady}
-            onError={onSceneReady}
-          />
+          <div className="hero__fallback" ref={() => onSceneReady()}>
+            <FlowDiagram />
+          </div>
         )}
 
         <div className="hero__vignette" aria-hidden="true" />
 
-        {/* peak annotations positioned by the WebGL scene */}
-        <div className="hero__labels" aria-hidden="true">
-          {HERO_ANALYTES.map((a, i) => (
-            <div
-              key={i}
-              className="peak-label"
-              ref={(el) => {
-                heroLabelEls[i] = el;
-              }}
-              style={{ ['--c' as string]: a.color }}
-            >
-              <span className="peak-label__dot" />
-              <span className="mono">
-                {a.formula} {(heroArrival(a.k) * HERO_COLUMN.simToMinutes).toFixed(1)}
-              </span>
-            </div>
-          ))}
-          <div className="axis-label mono" ref={(el) => (heroAxisEl.current = el)}>
-            Retention time (min) &nbsp;→
+        {/* annotations positioned by the WebGL scene */}
+        {webgl && (
+          <div className="hero__labels" aria-hidden="true">
+            {HERO_LABELS.map((l) => (
+              <div
+                key={l.id}
+                className={`scene-label scene-label--${l.tone ?? 'hw'}`}
+                ref={(el) => {
+                  heroLabelEls[l.id] = el;
+                }}
+              >
+                <span className="scene-label__t">{l.text}</span>
+                {l.sub && <span className="scene-label__s">{l.sub}</span>}
+              </div>
+            ))}
           </div>
+        )}
+        {webgl && <HeroChart active={visible} sticky={sticky} />}
+        <div className="hero__gauge" ref={gauge}>
+          <SuppressionGauge />
         </div>
+        <p className="hero__scale-note mono" ref={note}>
+          <span className="hide-phone">Magnified schematic · particle sizes, spacing and speed are illustrative</span>
+          <span className="show-phone">Magnified schematic · not to scale</span>
+        </p>
 
         <div className="hero__intro container" ref={intro}>
           <p className="mono hero__fade hero__eyebrow">
@@ -182,16 +178,6 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
               </li>
             ))}
           </ol>
-        </div>
-
-        <div className="hero__readout mono" ref={readout} aria-hidden="true">
-          <span>
-            t <span ref={readT}>0.00</span> min
-          </span>
-          <span className="hero__readout-sep" />
-          <span>
-            Δκ <span ref={readA}>0.00</span> µS/cm
-          </span>
         </div>
 
         <div className="hero__scroll mono" ref={scrollCue}>

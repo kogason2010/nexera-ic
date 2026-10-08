@@ -117,19 +117,20 @@ export function FinalCTA() {
           Separate. Suppress. Detect.
         </p>
         <div className="final__ctas" data-reveal>
-          <MagneticButton href="#contact">
-            <span className="btn__label">Request a Demo</span>
+          <MagneticButton href="https://www.shimadzu.com/an/forms/product/index.html">
+            <span className="btn__label">Ask Shimadzu about Nexera IC ↗</span>
             <ArrowRight />
           </MagneticButton>
           <MagneticButton href="#specs" variant="ghost">
             <span className="btn__label">View Specifications</span>
           </MagneticButton>
-          <MagneticButton href="https://www.shimadzu.com/an/" variant="ghost">
-            <span className="btn__label">Shimadzu official site ↗</span>
+          <MagneticButton href="https://www.shimadzu.com/an/products/liquid-chromatography/ion-chromatograph/nexera-ic/spec.html" variant="ghost">
+            <span className="btn__label">Official Nexera IC page ↗</span>
           </MagneticButton>
         </div>
         <p className="final__note mono" data-reveal>
-          “Request a Demo” is a placeholder. This independent showcase does not collect any information.
+          The first button opens Shimadzu’s own product-inquiry form on shimadzu.com. This independent showcase does not
+          collect any information, and the “Tour” control above only auto-scrolls this page.
         </p>
       </div>
     </section>
