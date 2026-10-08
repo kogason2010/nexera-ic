@@ -23,7 +23,7 @@ export function HeroLabels3D({ reducedMotion }: { reducedMotion: boolean }) {
       const x = (v.x * 0.5 + 0.5) * size.width;
       const y = (-v.y * 0.5 + 0.5) * size.height;
       const phone = size.width < 700;
-      const onScreen = v.z < 1 && x > 8 && x < size.width - 8 && y > 70 && y < size.height - 8;
+      const onScreen = v.z < 1 && x > 8 && x < size.width - 8 && y > 116 && y < size.height - 8;
       // keep the caption zone (bottom-left on desktop, bottom on phones) and the intro headline clear
       const inCaption = phone ? y > size.height * 0.6 : x < size.width * 0.4 && y > size.height * 0.64;
       if (!onScreen || inCaption) o = 0;
