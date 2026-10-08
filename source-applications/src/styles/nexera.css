@@ -1,0 +1,273 @@
+/* Nexera-specific additions on top of the shared design system */
+/* chemical formulas and units must keep their case (µS/cm, Cl⁻, mmol/L) */
+.mono {
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+@keyframes infoIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+.unofficial-ribbon {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 95;
+  margin: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(7, 9, 13, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 9.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .unofficial-ribbon {
+    bottom: 8px;
+    font-size: 8.5px;
+  }
+}
+
+/* selectivity explorer */
+.sep-order {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-2);
+  white-space: normal;
+}
+.sep-metrics .sep-metric:last-child dd .display {
+  font-size: 1rem;
+}
+
+/* dual channel reading */
+.case__reading {
+  position: absolute;
+  top: calc(50% + 24px);
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text);
+  background: rgba(7, 10, 15, 0.8);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.data__source {
+  margin-top: 18px;
+  font-size: 12px;
+}
+
+/* automation cards */
+.feature-card {
+  flex-basis: clamp(280px, 24vw, 380px) !important;
+}
+.feature-card__media {
+  aspect-ratio: 1 / 1 !important;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(60% 60% at 50% 45%, rgba(60, 100, 170, 0.18), transparent 70%),
+    linear-gradient(rgba(170, 195, 225, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(170, 195, 225, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+    #0a0d13 !important;
+}
+.feature-card__stage {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  color: var(--cyan);
+}
+.glyph {
+  width: 52%;
+  height: auto;
+  color: #cfe0f2;
+  overflow: visible;
+}
+.glyph-text {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--muted);
+}
+.glyph-fill {
+  fill: var(--cyan);
+}
+.glyph-accent {
+  stroke: var(--cyan);
+}
+.glyph-warn {
+  fill: var(--amber);
+}
+.glyph-warn-stroke {
+  stroke: var(--amber);
+}
+.glyph-level {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: glyphLevel 4s var(--ease) infinite;
+  opacity: 0.6;
+}
+@keyframes glyphLevel {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.55); }
+}
+.glyph-pulse {
+  animation: glyphPulse 1.8s ease-in-out infinite;
+}
+@keyframes glyphPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+.glyph-flow {
+  animation: glyphFlow 2.4s linear infinite;
+}
+.glyph-d1 { animation-delay: 0.3s; }
+.glyph-d2 { animation-delay: 0.6s; }
+.glyph-d3 { animation-delay: 0.9s; }
+.glyph-d4 { animation-delay: 1.2s; }
+@keyframes glyphFlow {
+  0% { transform: translateX(-10px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(26px); opacity: 0; }
+}
+.glyph-draw {
+  stroke-dasharray: 200;
+  animation: glyphDraw 4s var(--ease) infinite;
+}
+@keyframes glyphDraw {
+  0% { stroke-dashoffset: 200; }
+  60%, 100% { stroke-dashoffset: 0; }
+}
+.glyph-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: glyphPop 3s var(--ease) infinite;
+}
+@keyframes glyphPop {
+  0%, 15% { transform: scale(0); }
+  30%, 100% { transform: scale(1); }
+}
+.glyph-needle {
+  animation: glyphNeedle 3s var(--ease) infinite;
+}
+@keyframes glyphNeedle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(14px); }
+}
+.glyph-spin {
+  transform-origin: 60px 60px;
+  animation: glyphSpin 2.6s linear infinite;
+}
+@keyframes glyphSpin {
+  to { transform: rotate(360deg); }
+}
+
+.final__note {
+  margin-top: 26px;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .instrument__card {
+    background: rgba(7, 9, 13, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+}
+
+/* source links and discrepancies */
+.data-card__src {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #9fd8f5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.data-card__src:hover,
+.separation__note a,
+.specs__head a,
+.case__fine a {
+  color: var(--cyan);
+}
+.separation__note a,
+.specs__head a,
+.case__fine a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sep-control__limit {
+  display: block;
+  margin-top: 8px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #d9c3a8;
+  white-space: normal;
+}
+.sep-table__cap {
+  caption-side: top;
+  text-align: left;
+  font-size: 10.5px;
+  color: #d9c3a8;
+  padding-bottom: 6px;
+}
+.spec-conflicts {
+  margin-top: 48px;
+  padding: 24px;
+  border: 1px dashed rgba(255, 184, 119, 0.45);
+  border-radius: 16px;
+  background: rgba(255, 184, 119, 0.04);
+}
+.spec-conflicts__title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--amber);
+}
+.spec-conflicts__lede {
+  margin: 0 0 18px;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+.spec-conflicts dl {
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+.spec-conflict {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.spec-conflict dt {
+  font-weight: 500;
+  color: var(--text);
+}
+.spec-conflict dd {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+@media (max-width: 700px) {
+  .spec-conflict {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .instrument__overlay {
+    padding-bottom: calc(4vh + 46px);
+  }
+}

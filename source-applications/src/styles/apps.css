@@ -1,0 +1,449 @@
+/* Nexera IC Applications */
+body {
+  background: #06080c;
+}
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 60% at 70% 50%, rgba(50, 80, 140, 0.22), transparent 70%),
+    radial-gradient(40% 40% at 15% 90%, rgba(120, 90, 200, 0.07), transparent 70%),
+    #06080c;
+}
+.ion-stage {
+  position: absolute !important;
+  inset: 0;
+}
+.stage__fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+.stage__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(6, 8, 12, 0.92) 0%, rgba(6, 8, 12, 0.7) 34%, transparent 58%);
+}
+.stage__labels {
+  position: absolute;
+  inset: 0;
+}
+.ion-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 9px 5px;
+  border: 1px solid rgba(160, 190, 225, 0.3);
+  border-radius: 7px;
+  background: rgba(6, 9, 14, 0.72);
+  white-space: nowrap;
+  will-change: transform, opacity;
+  transition: opacity 0.3s;
+}
+.ion-label__t {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.ion-label__s {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: #a9b6c7;
+}
+.ion-label--tag {
+  border-color: rgba(99, 211, 255, 0.5);
+}
+.ion-label--tag .ion-label__t {
+  font-family: var(--body);
+  font-size: 15px;
+}
+
+main,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* hero */
+.hero-a {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+}
+.hero-a__inner {
+  padding-top: calc(var(--nav-h) + 6vh);
+  padding-bottom: 10vh;
+}
+.hero-a__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.hero-a__title {
+  max-width: 9ch;
+  margin-bottom: 28px;
+}
+.hero-a__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+.hero-a__line > span {
+  display: inline-block;
+}
+.hero-a__lede {
+  max-width: 34ch;
+  margin-bottom: 34px;
+}
+.hero-a__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+.hero-a__stats {
+  display: flex;
+  gap: clamp(28px, 4vw, 56px);
+  margin: 0 0 28px;
+}
+.hero-a__stats dt {
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.hero-a__stats dd {
+  margin: 0;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 1;
+}
+.hero-a__stats small {
+  font-size: 0.4em;
+  color: var(--text-2);
+}
+.hero-a__note {
+  max-width: 52ch;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* chapters */
+.chapter {
+  min-height: 100vh;
+  padding: clamp(110px, 16vh, 180px) 0 clamp(60px, 10vh, 120px);
+}
+.chapter__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) 1fr;
+}
+.chapter__col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.chapter__title {
+  margin: 0;
+}
+.chapter__lede p {
+  margin: 0;
+}
+.chapter__facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--line);
+}
+.chapter__facts > div {
+  padding: 12px 14px;
+  background: rgba(8, 11, 16, 0.92);
+}
+.chapter__facts dt {
+  font-size: 10.5px;
+  margin-bottom: 4px;
+}
+.chapter__facts dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.chapter__why {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(8, 11, 16, 0.86);
+}
+.chapter__why p {
+  margin: 0 0 8px;
+  color: var(--text-2);
+}
+.chapter__why .mono {
+  font-size: 11px;
+  color: var(--cyan);
+}
+.chapter__why ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--text-2);
+}
+.chapter__why b {
+  color: var(--text);
+  font-weight: 500;
+}
+.chart-card {
+  margin: 0;
+  padding: 14px 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(8, 11, 16, 0.9);
+}
+.chart-card figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.chart-card__sub {
+  color: var(--muted);
+}
+.chart-card .chart {
+  width: 100%;
+  height: auto;
+}
+.chapter__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.chapter__src {
+  margin: 0;
+  font-size: 11px;
+}
+.chapter__src a,
+.methods a {
+  color: #9fd8f5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.chapter__src a:hover,
+.methods a:hover {
+  color: var(--cyan);
+}
+.chapter__fine {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* atlas */
+.atlas__groups {
+  display: grid;
+  gap: 14px;
+}
+.atlas__gtitle {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+}
+.atlas__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.atlas__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(8, 11, 16, 0.85);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s;
+}
+.atlas__chip:hover {
+  border-color: var(--c);
+}
+.atlas__chip.is-on {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, rgba(8, 11, 16, 0.9));
+}
+.atlas__chip:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+.atlas__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.atlas__panel {
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--c) 45%, transparent);
+  border-radius: 16px;
+  background: rgba(8, 11, 16, 0.92);
+}
+.atlas__kind {
+  margin: 0 0 4px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.atlas__name {
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+}
+.atlas__name span {
+  color: var(--c);
+  font-family: var(--mono);
+  font-size: 0.7em;
+  margin-left: 8px;
+}
+.atlas__shape {
+  margin: 0 0 12px;
+  color: var(--text-2);
+}
+.atlas__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 0.92rem;
+}
+.atlas__table th,
+.atlas__table td {
+  text-align: left;
+  padding: 7px 8px 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.atlas__table thead th {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.atlas__table tbody th {
+  font-weight: 500;
+  color: var(--text);
+}
+.atlas__note {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
+
+/* methods */
+.methods {
+  padding: clamp(110px, 16vh, 180px) 0 clamp(80px, 12vh, 140px);
+}
+.methods__title {
+  margin: 18px 0 28px;
+}
+.methods__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(8, 11, 16, 0.92);
+}
+.methods__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+.methods__table th,
+.methods__table td {
+  padding: 13px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.methods__table thead th {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.methods__table tbody th {
+  width: 160px;
+  font-size: 11px;
+  font-weight: 400;
+}
+.methods__table td {
+  color: var(--text-2);
+}
+.methods__fine {
+  margin: 18px 0 28px;
+  max-width: 80ch;
+  color: var(--muted);
+}
+.methods__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .stage__shade {
+    background: linear-gradient(180deg, transparent 0%, transparent 32%, rgba(6, 8, 12, 0.75) 50%, rgba(6, 8, 12, 0.92) 70%);
+  }
+  .chapter__inner {
+    grid-template-columns: 1fr;
+  }
+  .chapter {
+    padding-top: 46vh;
+  }
+  .hero-a {
+    align-items: flex-end;
+  }
+  .hero-a__inner {
+    padding-top: 46vh;
+  }
+  .chapter__pair {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .chapter__facts {
+    grid-template-columns: 1fr;
+  }
+  .hero-a__stats dd {
+    font-size: 1.9rem;
+  }
+  .ion-label {
+    padding: 2px 6px 3px;
+  }
+  .ion-label__t {
+    font-size: 11px;
+  }
+  .ion-label__s {
+    display: none;
+  }
+}
+@media (max-width: 900px) {
+  .methods {
+    padding-top: 46vh;
+  }
+}
+@media (max-width: 640px) {
+  .nav .brand span {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,183 @@
+/* Compact page controls: guided tour (play / pause / stop) + jump to top / end */
+.scroll-ctl {
+  position: fixed;
+  right: 10px;
+  bottom: 104px;
+  z-index: 96;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.scroll-ctl__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(8, 11, 16, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.scroll-ctl__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 44px;
+  padding: 3px 0;
+  border-radius: 999px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.25s, opacity 0.25s;
+}
+.scroll-ctl__btn:hover {
+  background: rgba(99, 211, 255, 0.12);
+}
+.scroll-ctl__btn:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+.scroll-ctl__btn.is-dim {
+  opacity: 0.45;
+}
+.scroll-ctl__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+}
+.scroll-ctl__ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.scroll-ctl__ring circle {
+  fill: none;
+  stroke-width: 2.5;
+}
+.scroll-ctl__ring .track {
+  stroke: rgba(99, 211, 255, 0.35);
+}
+.scroll-ctl__ring .fill {
+  stroke: var(--cyan);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+.scroll-ctl .glyph {
+  width: 14px;
+  height: 14px;
+  fill: var(--cyan);
+}
+.scroll-ctl__txt {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #c8d2de;
+}
+.scroll-ctl__now {
+  margin: 0 0 6px;
+  max-width: 230px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: rgba(8, 11, 16, 0.9);
+  font-size: 10.5px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.scroll-ctl__dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: tourpulse 1.2s ease-in-out infinite;
+}
+.scroll-ctl__dot.is-paused {
+  animation: none;
+  background: var(--amber);
+}
+@keyframes tourpulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* nav entry */
+.nav__actions {
+  display: flex;
+  align-items: center;
+}
+.nav__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  margin-right: 10px;
+  border: 1px solid rgba(99, 211, 255, 0.45);
+  border-radius: 999px;
+  background: rgba(99, 211, 255, 0.08);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.nav__demo:hover {
+  background: rgba(99, 211, 255, 0.2);
+}
+.nav__demo svg {
+  width: 12px;
+  height: 12px;
+  fill: var(--cyan);
+}
+
+@media (max-width: 900px) {
+  .nav__demo {
+    height: 36px;
+    padding: 0 12px;
+    margin-right: 4px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 700px) {
+  /* phones: a small horizontal pill in the corner, above the disclaimer ribbon */
+  .scroll-ctl {
+    right: 8px;
+    bottom: 34px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .scroll-ctl__stack {
+    flex-direction: row;
+    gap: 2px;
+    padding: 2px 4px;
+  }
+  .scroll-ctl__btn {
+    width: 38px;
+    padding: 2px 0;
+  }
+  .scroll-ctl__icon {
+    width: 28px;
+    height: 28px;
+  }
+  .scroll-ctl__txt {
+    display: none;
+  }
+  .scroll-ctl__now {
+    margin: 0;
+    font-size: 10px;
+    max-width: 210px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-ctl__dot {
+    animation: none;
+  }
+}
