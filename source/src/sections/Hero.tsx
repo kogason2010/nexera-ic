@@ -31,6 +31,7 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
   const sticky = useRef<HTMLDivElement>(null);
   const gauge = useRef<HTMLDivElement>(null);
   const note = useRef<HTMLParagraphElement>(null);
+  const product = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState(0);
   const phaseRef = useRef(0);
   const visible = useInView(section, '0px');
@@ -54,9 +55,15 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
       const rail = railFill.current.parentElement?.parentElement;
       if (rail) rail.style.opacity = (smoothstep(0.03, 0.09, p) * (1 - smoothstep(0.42, 0.45, p) * 0.85)).toFixed(3);
     }
-    // phones: the intro text fills the screen, so the scene stays dim behind it until scrolling starts
+    // the product still is the opening centrepiece; the flow-path scene takes over as scrolling starts
     const cv = sticky.current?.querySelector<HTMLCanvasElement>('canvas');
-    if (cv) cv.style.opacity = window.innerWidth < 700 ? (0.16 + 0.84 * smoothstep(0.03, 0.08, p)).toFixed(3) : '1';
+    if (cv) cv.style.opacity = smoothstep(0.035, 0.085, p).toFixed(3);
+    if (product.current) {
+      const o = 1 - smoothstep(0.02, 0.07, p);
+      product.current.style.opacity = o.toFixed(3);
+      product.current.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+      product.current.style.transform = `translate3d(0, ${(-p * 600).toFixed(1)}px, 0) scale(${(1 + p * 0.6).toFixed(4)})`;
+    }
     if (scrollCue.current) scrollCue.current.style.opacity = (1 - smoothstep(0.0, 0.03, p)).toFixed(3);
     if (gauge.current) {
       const g = smoothstep(0.44, 0.47, p) * (1 - smoothstep(0.56, 0.59, p));
@@ -84,6 +91,8 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
       gsap.from('.hero__line > span', { yPercent: 115, duration: 1.5, stagger: 0.1, ease: 'expo.out' });
       gsap.from('.hero__fade', { y: 20, opacity: 0, duration: 1.2, stagger: 0.08, delay: 0.35, ease: 'power3.out' });
     }, intro);
+    if (product.current)
+      gsap.from(product.current.querySelector('img'), { y: 36, scale: 0.97, opacity: 0, duration: 1.8, delay: 0.15, ease: 'expo.out' });
     return () => ctx.revert();
   }, [introPlayed, reducedMotion]);
 
@@ -129,6 +138,16 @@ export function Hero({ webgl, reducedMotion, onSceneReady, introPlayed }: Props)
           <span className="hide-phone">Magnified schematic · particle sizes, spacing and speed are illustrative</span>
           <span className="show-phone">Magnified schematic · not to scale</span>
         </p>
+
+        <div className="hero__product" ref={product}>
+          <img
+            src="assets/images/nexera-ic-system.webp"
+            width={1600}
+            height={1197}
+            alt="Illustrative 3D model of a Nexera IC single system: SI-150 autosampler with eluent bottles in its rail, beside an IC-150 main unit."
+          />
+          <p className="hero__product-cap mono">SI-150 + IC-150 · illustrative 3D model</p>
+        </div>
 
         <div className="hero__intro container" ref={intro}>
           <p className="mono hero__fade hero__eyebrow">

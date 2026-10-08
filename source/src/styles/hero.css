@@ -29,6 +29,59 @@
   object-fit: cover;
   opacity: 0.85;
 }
+.hero__product {
+  position: absolute;
+  z-index: 1;
+  right: max(var(--gutter), 2vw);
+  top: calc(var(--nav-h) + 4vh);
+  bottom: 9vh;
+  width: min(45vw, 760px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.hero__product::before {
+  /* soft overhead key light behind the instrument */
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 4%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(130, 170, 230, 0.2), rgba(90, 120, 190, 0.06) 60%, transparent);
+  filter: blur(6px);
+}
+.hero__product::after {
+  /* floor glow under the stack */
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 9%;
+  height: 16%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(140, 175, 230, 0.16), transparent 70%);
+}
+.hero__product img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  /* fade the rendered floor into the page so no image edge shows */
+  -webkit-mask-image: radial-gradient(ellipse 58% 60% at 50% 47%, #000 72%, transparent 100%);
+  mask-image: radial-gradient(ellipse 58% 60% at 50% 47%, #000 72%, transparent 100%);
+}
+.hero__product-cap {
+  position: relative;
+  z-index: 1;
+  margin: -2vh 0 0;
+  font-size: 10.5px;
+  color: var(--muted);
+}
 .hero__vignette {
   position: absolute;
   inset: 0;
@@ -499,6 +552,19 @@
     height: 560vh;
   }
 }
+@media (max-width: 900px) {
+  .hero__product {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    top: calc(var(--nav-h) + 1vh);
+    bottom: auto;
+    height: 29vh;
+  }
+  .hero__product-cap {
+    display: none;
+  }
+}
 @media (max-width: 640px) {
   .hero-chart {
     left: var(--gutter);
@@ -532,9 +598,12 @@
   .scene-label__s {
     font-size: 9.5px;
   }
+  .hero__eyebrow {
+    display: none;
+  }
   .hero__intro {
     justify-content: flex-end;
-    padding-bottom: 18vh;
+    padding-bottom: 11vh;
   }
   .hero__title {
     font-size: clamp(2.9rem, 13.5vw, 4.4rem);

@@ -54,7 +54,7 @@
   pointer-events: auto;
 }
 .instrument__head .h-md {
-  max-width: 20ch;
+  max-width: 24ch;
 }
 .instrument__detail {
   align-self: end;
