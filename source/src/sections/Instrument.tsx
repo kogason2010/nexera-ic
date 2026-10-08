@@ -88,7 +88,7 @@ export function Instrument({ webgl, reducedMotion }: { webgl: boolean; reducedMo
             ))}
           </ol>
         </div>
-        <p className="instrument__note mono">Stylised model · rendered in real time</p>
+        <p className="instrument__note mono">Illustrative 3D model · rendered in real time</p>
       </div>
     </section>
   );

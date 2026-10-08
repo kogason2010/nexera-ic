@@ -2,7 +2,7 @@
   position: relative;
   height: 380vh;
   background:
-    radial-gradient(70% 60% at 50% 55%, rgba(40, 60, 100, 0.22), transparent 70%),
+    radial-gradient(60% 55% at 62% 50%, rgba(70, 92, 135, 0.38), transparent 72%),
     #06080c;
   border-top: 1px solid var(--line);
 }

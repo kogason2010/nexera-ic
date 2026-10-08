@@ -4,6 +4,7 @@ import { ScrollTrigger } from '../utils/gsap';
 import { scrollToTarget, getLenis } from '../hooks/useSmoothScroll';
 import { BrandMark } from './Icons';
 import { MagneticButton } from './MagneticButton';
+import { startTour, subscribeTour, toggleTour } from '../utils/tour';
 
 export function Nav() {
   const [solid, setSolid] = useState(false);
@@ -11,6 +12,8 @@ export function Nav() {
   const [active, setActive] = useState<string | null>(null);
   const bar = useRef<HTMLDivElement>(null);
   const burger = useRef<HTMLButtonElement>(null);
+  const [touring, setTouring] = useState(false);
+  useEffect(() => subscribeTour((s) => setTouring(s.running)), []);
 
   useEffect(() => {
     const triggers: ScrollTrigger[] = [];
@@ -88,6 +91,13 @@ export function Nav() {
               ))}
             </ul>
           </nav>
+          <div className="nav__actions">
+          <button type="button" className="nav__demo" data-tour-control onClick={() => toggleTour()} aria-pressed={touring}>
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              {touring ? <rect x="3" y="3" width="10" height="10" rx="2" /> : <path d="M4 2.5v11l9.5-5.5Z" />}
+            </svg>
+            {touring ? 'Stop' : 'Demo'}
+          </button>
           <MagneticButton href="#contact" variant="ghost" className="nav__cta">
             <span className="btn__label">Contact</span>
           </MagneticButton>
@@ -101,6 +111,7 @@ export function Nav() {
           >
             <span />
           </button>
+          </div>
         </div>
         <div className="nav__progress" ref={bar} aria-hidden="true" />
       </header>
@@ -116,6 +127,21 @@ export function Nav() {
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href="#top"
+                tabIndex={open ? 0 : -1}
+                data-tour-control
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpen(false);
+                  window.setTimeout(startTour, 450);
+                }}
+              >
+                <span>▶ Demo tour</span>
+                <span className="mono">auto</span>
+              </a>
+            </li>
           </ol>
         </nav>
         <p className="mono">Unofficial showcase · not affiliated with Shimadzu.</p>

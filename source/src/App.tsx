@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader } from './components/Loader';
 import { Nav } from './components/Nav';
+import { ScrollControls } from './components/ScrollControls';
+import './styles/controls.css';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { useSmoothScroll } from './hooks/useSmoothScroll';
 import { ScrollTrigger } from './utils/gsap';
@@ -48,6 +50,7 @@ export default function App() {
       </a>
       <Loader ready={sceneReady} onDone={onIntroDone} />
       <Nav />
+      <ScrollControls />
       <p className="unofficial-ribbon mono" role="note">
         Unofficial showcase · not affiliated with Shimadzu
         <span className="sr-only">. {DISCLAIMER}</span>

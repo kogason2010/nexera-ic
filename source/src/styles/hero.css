@@ -169,7 +169,7 @@
 .hero__readout {
   white-space: nowrap;
   position: absolute;
-  right: var(--gutter);
+  right: max(var(--gutter), 264px); /* clear of the floating page controls */
   bottom: clamp(48px, 9vh, 96px);
   display: flex;
   align-items: center;
